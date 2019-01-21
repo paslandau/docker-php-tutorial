@@ -1,4 +1,4 @@
-# Learning Docker for PHP Developers
+# Docker PHP Tutorial - Learning Docker for PHP Developers
 In this tutorial I'll take you on "my" journey of learning Docker as a PHP developer. 
 Since I actively use everything explained along the way (and force it upon my team ;)) I can hopefully
 shed some light onto some more advanced issues like cross-OS-setups and seamless IDE integration.
@@ -23,6 +23,11 @@ git checkout part_2
 ````
 
 ## Tutorials
+Please subscribe to my [RSS Feed](https://www.pascallandau.com/feed.xml) and/or 
+[subscribe via email](https://www.pascallandau.com/blog/#newsletter) 
+to be automatically notified when a new part gets published. I'll also probably brag on
+[Twitter](https://twitter.com/PascalLandau) about it ;)
+
 ### Published
 - [Setting up PHP, PHP-FPM and NGINX for local development on Docker](#setting-up-php-php-fpm-and-nginx-for-local-development-on-docker)
 - [Setting up PhpStorm with Xdebug for local development on Docker](#setting-up-phpstorm-with-xdebug-for-local-development-on-docker)
@@ -34,11 +39,6 @@ git checkout part_2
 - [Building a CI Pipeline with Jenkins for Docker-ized PHP Applications](#building-a-ci-pipeline-with-jenkins-for-docker-ized-php-applications)
 - [Deploying Docker-ized PHP Applications via CD Pipeline with Jenkins to Production](#deploying-docker-ized-php-applications-via-cd-pipeline-with-jenkins-to-production)
 - [Scaling Docker-ized PHP Applications with Terraform and Kubernetes on GCP/AWS](#scaling-docker-ized-php-applications-with-terraform-and-kubernetes-on-gcpaws)
-
-Please subscribe to my [RSS Feed](https://www.pascallandau.com/feed.xml) and/or 
-[subscribe via email](https://www.pascallandau.com/blog/#newsletter) 
-to be automatically notified when a new part gets published. I'll also probably brag on
-[Twitter](https://twitter.com/PascalLandau) about it ;)
 
 ### Setting up PHP, PHP-FPM and NGINX for local development on Docker
 - Status: published ✓
