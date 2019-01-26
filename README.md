@@ -58,7 +58,7 @@ How to setup Xdebug (including the solution for the dreaded 'Connection with Xde
 
 ### Running a complete PHP Development Environment/Infrastructure on Docker
 - Status: in the making...
-- Link: 
+- Link: [Part 3 (Draft)](https://github.com/paslandau/paslandau.github.io/blob/develop/source/_drafts/running-complete-php-development-environment-on-docker.md)
 - Branch: 
 
 Running a battle-tested development infrastructure for PHP developers in Docker.
@@ -66,17 +66,17 @@ How to organize the docker folder structure (e.g. shared scripts for containers)
 How to set up further services like PHP worker nodes or a Blackfire profiler server? 
 How to establish a convenient workflow via `make`?
 
-### Building a CI Pipeline with Jenkins for Docker-ized PHP Applications
+### Building a CI Pipeline with Jenkins for Dockerized PHP Applications
 - Status: planned
-- Link: https://www.pascallandau.com/blog/setup-phpstorm-with-xdebug-on-docker/
+- Link: [Part 4 (Draft)](https://github.com/paslandau/paslandau.github.io/blob/develop/source/_drafts/jenkins-ci-pipeline-for-dockerized-php-applications.md)
 - Branch: 
 
-### Deploying Docker-ized PHP Applications via CD Pipeline with Jenkins to Production
+### Deploying Dockerized PHP Applications via CD Pipeline with Jenkins to Production
 - Status: Wishful thinking
 - Link: 
 - Branch: 
 
-### Scaling Docker-ized PHP Applications with Terraform and Kubernetes on GCP/AWS
+### Scaling Dockerized PHP Applications with Terraform and Kubernetes on GCP/AWS
 - Status: Dream Caused by the Flight of a Bee Around a Pomegranate a Second Before Awakening
 - Link: 
 - Branch: 
