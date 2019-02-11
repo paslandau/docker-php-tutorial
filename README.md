@@ -19,7 +19,7 @@ cd /c/codebase/
 git clone https://github.com/paslandau/docker-php-tutorial.git
 cd docker-php-tutorial
 
-git checkout part_2
+git checkout part_2_setting-up-phpstorm-with-xdebug-for-local-development-on-docker
 ````
 
 ## Tutorials
