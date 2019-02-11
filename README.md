@@ -36,9 +36,9 @@ to be automatically notified when a new part gets published. I'll also probably 
 - [Running a complete PHP Development Environment/Infrastructure on Docker](#running-a-complete-php-development-environmentinfrastructure-on-docker)
 
 ### Roadmap (wow much want, such little time):
-- [Building a CI Pipeline with Jenkins for Docker-ized PHP Applications](#building-a-ci-pipeline-with-jenkins-for-docker-ized-php-applications)
-- [Deploying Docker-ized PHP Applications via CD Pipeline with Jenkins to Production](#deploying-docker-ized-php-applications-via-cd-pipeline-with-jenkins-to-production)
-- [Scaling Docker-ized PHP Applications with Terraform and Kubernetes on GCP/AWS](#scaling-docker-ized-php-applications-with-terraform-and-kubernetes-on-gcpaws)
+- [Building a CI Pipeline with Jenkins for Dockerized PHP Applications](#building-a-ci-pipeline-with-jenkins-for-dockerized-php-applications)
+- [Deploying Dockerized PHP Applications via CD Pipeline with Jenkins to Production](#deploying-dockerized-php-applications-via-cd-pipeline-with-jenkins-to-production)
+- [Scaling Dockerized PHP Applications with Terraform and Kubernetes on GCP/AWS](#scaling-dockerized-php-applications-with-terraform-and-kubernetes-on-gcpaws)
 
 ### Setting up PHP, PHP-FPM and NGINX for local development on Docker
 - Status: published ✓
