@@ -33,7 +33,7 @@ to be automatically notified when a new part gets published. I'll also probably 
 - [Setting up PhpStorm with Xdebug for local development on Docker](#setting-up-phpstorm-with-xdebug-for-local-development-on-docker)
 
 ### Planned (already used by us but not put into writing):
-- [Running a complete PHP Development Environment/Infrastructure on Docker](#running-a-complete-php-development-environmentinfrastructure-on-docker)
+- [Structuring the Docker setup for PHP Projects](#structuring-the-docker-setup-for-php-projects)
 
 ### Roadmap (wow much want, such little time):
 - [Building a CI Pipeline with Jenkins for Dockerized PHP Applications](#building-a-ci-pipeline-with-jenkins-for-dockerized-php-applications)
@@ -56,10 +56,10 @@ How to interact with containers? How to organize multiple services (php-cli, php
 Using docker for Development. How to configure PhpStorm to play nicely with Docker? 
 How to setup Xdebug (including the solution for the dreaded 'Connection with Xdebug was not established.' error)?
 
-### Running a complete PHP Development Environment/Infrastructure on Docker
+### Structuring the Docker setup for PHP Projects
 - Status: in the making...
-- Link: [Part 3 (Draft)](https://github.com/paslandau/paslandau.github.io/blob/develop/source/_drafts/running-complete-php-development-environment-on-docker.md)
-- Branch: 
+- Link: [(Draft)](https://github.com/paslandau/paslandau.github.io/blob/develop/source/_drafts/running-complete-php-development-environment-on-docker.md)
+- Branch: [Part 3](https://github.com/paslandau/docker-php-tutorial/tree/part_3_structuring-the-docker-setup-for-php-projects)
 
 Running a battle-tested development infrastructure for PHP developers in Docker.
 How to organize the docker folder structure (e.g. shared scripts for containers)? 
