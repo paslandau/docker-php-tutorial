@@ -13,7 +13,7 @@ help:
 
 .PHONY: docker-clean
 docker-clean: ## Remove the .env file for docker
-	rm -f $(DOCKER_COMPOSE_DIR)/.env && \
+	rm -f $(DOCKER_COMPOSE_DIR)/.env
 
 .PHONY: docker-init
 docker-init: .docker/.env ## Make sure the .env file exists for docker
