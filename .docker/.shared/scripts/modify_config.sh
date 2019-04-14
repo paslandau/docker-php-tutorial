@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
+
 CONFIG_FILE=$1
 VAR_NAME=$2
 VAR_VALUE=$3

@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
+
 # add wget
 apt-get update -yqq && apt-get -f install -yyq wget
 
