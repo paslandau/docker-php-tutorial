@@ -60,5 +60,7 @@ services:
         - TZ=${TIMEZONE}
     volumes:
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}
+    ports:
+      - "${WORKSPACE_HOST_SSH_PORT}:22"
     networks:
       - backend

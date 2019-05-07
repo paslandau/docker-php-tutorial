@@ -24,6 +24,10 @@ docker-build-from-scratch: docker-init ## Build all docker images from scratch, 
 	$(DOCKER_COMPOSE) build --pull --no-cache --parallel $(CONTAINER) && \
 	$(DOCKER_COMPOSE) up -d --force-recreate $(CONTAINER)
 
+.PHONY: docker-test
+docker-test: docker-init docker-up ## Run the infrastructure tests for the docker setup
+	sh $(DOCKER_COMPOSE_DIR)/docker-test.sh
+
 .PHONY: docker-build
 docker-build: docker-init ## Build all docker images. Build a specific image by providing the service name via: make docker-build CONTAINER=<service>
 	$(DOCKER_COMPOSE) build --parallel $(CONTAINER) && \
@@ -40,7 +44,3 @@ docker-up: docker-init ## Start all docker containers. To only start one contain
 .PHONY: docker-down
 docker-down: docker-init ## Stop all docker containers. To only stop one container, use CONTAINER=<service>
 	$(DOCKER_COMPOSE) down $(CONTAINER)
-
-.PHONY: docker-test
-docker-test: docker-init docker-up ## Run the infrastructure tests for the docker setup
-	sh $(DOCKER_COMPOSE_DIR)/docker-test.sh
