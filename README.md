@@ -58,7 +58,7 @@ How to setup Xdebug (including the solution for the dreaded 'Connection with Xde
 
 ### Structuring the Docker setup for PHP Projects
 - Status: in the making...
-- Link: [(Draft)](https://github.com/paslandau/paslandau.github.io/blob/develop/source/_drafts/running-complete-php-development-environment-on-docker.md)
+- Link: [(Draft)](https://github.com/paslandau/paslandau.github.io/blob/develop/source/blog/structuring-the-docker-setup-for-php-projects.md)
 - Branch: [Part 3](https://github.com/paslandau/docker-php-tutorial/tree/part_3_structuring-the-docker-setup-for-php-projects)
 
 Running a battle-tested development infrastructure for PHP developers in Docker.
