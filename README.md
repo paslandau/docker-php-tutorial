@@ -11,7 +11,7 @@ through
 
 ## Setup
 Each tutorial is placed in a separate branch and has an accompanying article in [my blog](https://www.pascallandau.com/blog/)
-I recommend to clone the full repository and check out the corresponding branch for easy reference. 
+I recommend to clone the full repository and check out the corresponding branch for easy reference. Example:
 
 ````
 mkdir -p /c/codebase
@@ -31,12 +31,12 @@ to be automatically notified when a new part gets published. I'll also probably 
 ### Published
 - [Setting up PHP, PHP-FPM and NGINX for local development on Docker](#setting-up-php-php-fpm-and-nginx-for-local-development-on-docker)
 - [Setting up PhpStorm with Xdebug for local development on Docker](#setting-up-phpstorm-with-xdebug-for-local-development-on-docker)
-
-### Planned (already used by us but not put into writing):
 - [Structuring the Docker setup for PHP Projects](#structuring-the-docker-setup-for-php-projects)
 
-### Roadmap (wow much want, such little time):
+### Planned (already used by us but not put into writing):
 - [Building a CI Pipeline with Jenkins for Dockerized PHP Applications](#building-a-ci-pipeline-with-jenkins-for-dockerized-php-applications)
+
+### Roadmap (wow much want, such little time):
 - [Deploying Dockerized PHP Applications via CD Pipeline with Jenkins to Production](#deploying-dockerized-php-applications-via-cd-pipeline-with-jenkins-to-production)
 - [Scaling Dockerized PHP Applications with Terraform and Kubernetes on GCP/AWS](#scaling-dockerized-php-applications-with-terraform-and-kubernetes-on-gcpaws)
 
@@ -57,13 +57,12 @@ Using docker for Development. How to configure PhpStorm to play nicely with Dock
 How to setup Xdebug (including the solution for the dreaded 'Connection with Xdebug was not established.' error)?
 
 ### Structuring the Docker setup for PHP Projects
-- Status: in the making...
-- Link: [(Draft)](https://github.com/paslandau/paslandau.github.io/blob/develop/source/blog/structuring-the-docker-setup-for-php-projects.md)
+- Status: published ✓
+- Link: https://www.pascallandau.com/blog/structuring-the-docker-setup-for-php-projects/
 - Branch: [Part 3](https://github.com/paslandau/docker-php-tutorial/tree/part_3_structuring-the-docker-setup-for-php-projects)
 
 Running a battle-tested development infrastructure for PHP developers in Docker.
 How to organize the docker folder structure (e.g. shared scripts for containers)? 
-How to set up further services like PHP worker nodes or a Blackfire profiler server? 
 How to establish a convenient workflow via `make`?
 
 ### Building a CI Pipeline with Jenkins for Dockerized PHP Applications
