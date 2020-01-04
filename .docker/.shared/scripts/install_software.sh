@@ -6,6 +6,7 @@ apt-get update -yqq && apt-get install -yqq \
     gdb \
     git \
     htop \
+    iproute2 \
     iputils-ping \
     ltrace \
     make \
@@ -16,5 +17,4 @@ apt-get update -yqq && apt-get install -yqq \
     unzip \
     vim \
     wget \
-    iproute2 \
 ;
