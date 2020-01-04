@@ -16,4 +16,5 @@ apt-get update -yqq && apt-get install -yqq \
     unzip \
     vim \
     wget \
+    iproute2 \
 ;
