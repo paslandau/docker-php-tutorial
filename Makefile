@@ -5,6 +5,9 @@ ifeq ($(OS),Windows_NT)
 	# Windows requires the .exe extension, otherwise the entry is ignored
 	# @see https://stackoverflow.com/a/60318554/413531
     SHELL := bash.exe
+    # make sure that MinGW / MSYSY does not automatically convert paths starting with /
+    # @see https://stackoverflow.com/a/48348531
+    export MSYS_NO_PATHCONV=1
 else
     SHELL := bash
 endif

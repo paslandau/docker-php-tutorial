@@ -52,6 +52,8 @@ DOCKER_COMPOSE_PHP_BASE:=$(DOCKER_COMPOSE_COMMAND) -f $(DOCKER_COMPOSE_FILE_PHP_
 EXECUTE_IN_WORKER_CONTAINER?=
 EXECUTE_IN_APPLICATION_CONTAINER?=
 
+DOCKER_SERVICE_NAME?=
+
 # we can pass EXECUTE_IN_CONTAINER=true to a make invocation in order to execute the target in a docker container.
 # Caution: this only works if the command in the target is prefixed with a $(EXECUTE_IN_*_CONTAINER) variable.
 # If EXECUTE_IN_CONTAINER is NOT defined, we will check if make is ALREADY executed in a docker container.
@@ -67,11 +69,11 @@ ifndef EXECUTE_IN_CONTAINER
 	endif
 endif
 ifeq ($(EXECUTE_IN_CONTAINER),true)
+	EXECUTE_IN_CONTAINER:=$(DOCKER_COMPOSE) exec -T --user $(APP_USER_NAME) $(DOCKER_SERVICE_NAME)
 	EXECUTE_IN_APPLICATION_CONTAINER:=$(DOCKER_COMPOSE) exec -T --user $(APP_USER_NAME) $(DOCKER_SERVICE_NAME_APPLICATION)
 	EXECUTE_IN_WORKER_CONTAINER:=$(DOCKER_COMPOSE) exec -T --user $(APP_USER_NAME) $(DOCKER_SERVICE_NAME_PHP_WORKER)
 endif
 
-DOCKER_SERVICE_NAME?=
 
 ##@ [Docker]
 

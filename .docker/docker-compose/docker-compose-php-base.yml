@@ -13,6 +13,7 @@ services:
         - APP_GROUP_NAME=${APP_GROUP_NAME?}
         - APP_USER_ID=${APP_USER_ID?}
         - APP_USER_NAME=${APP_USER_NAME?}
+        - COMPOSER_VERSION=${COMPOSER_VERSION?}
         - ENV=${ENV?}
         - TARGET_PHP_VERSION=${PHP_VERSION?}
       target: ${ENV?}

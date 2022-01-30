@@ -14,16 +14,30 @@ volumes:
 
 services:
   php-fpm:
+    environment:
+      - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
+    # cap_add and security_opt are required to enable strace
+    # @see https://stackoverflow.com/a/46676868
+    cap_add:
+      - "SYS_PTRACE"
+    security_opt:
+      - "seccomp=unconfined"
     volumes:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
     networks:
       - network
-
+        
   php-worker:
+    environment:
+      - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
     volumes:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+    # cap_add and security_opt are required to enable strace
+    # @see https://stackoverflow.com/a/46676868
     cap_add:
       - "SYS_PTRACE"
+    security_opt:
+      - "seccomp=unconfined"
     networks:
       - network
   
@@ -49,8 +63,14 @@ services:
         - BASE_IMAGE=${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-base-${ENV?}:${TAG?}
         - APP_SSH_PASSWORD=${APP_SSH_PASSWORD?}
         - ENV=${ENV?}
+    environment:
+      - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
+    # cap_add and security_opt are required to enable strace
+    # @see https://stackoverflow.com/a/46676868
     cap_add:
       - "SYS_PTRACE"
+    security_opt:
+      - "seccomp=unconfined"
     volumes:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
     ports:
@@ -58,6 +78,8 @@ services:
     tty: true
     networks:
       - network
+    extra_hosts:
+      - host.docker.internal:host-gateway
    
   mysql:
     image: mysql:${MYSQL_VERSION?}
