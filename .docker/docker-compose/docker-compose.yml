@@ -1,0 +1,32 @@
+version: '3.7'
+
+services:
+  php-fpm:
+    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-fpm-${ENV?}:${TAG?}
+    build:
+      context: ../
+      dockerfile: ./images/php/fpm/Dockerfile
+      target: ${ENV?}
+      args:
+        - BASE_IMAGE=${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-base-${ENV?}:${TAG?}
+        - TARGET_PHP_VERSION=${PHP_VERSION?}
+          
+  php-worker:
+    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-worker-${ENV?}:${TAG?}
+    build:
+      context: ../
+      dockerfile: ./images/php/worker/Dockerfile
+      target: ${ENV?}
+      args:
+        - BASE_IMAGE=${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-base-${ENV?}:${TAG?}
+        - PHP_WORKER_PROCESS_NUMBER=${PHP_WORKER_PROCESS_NUMBER:-4}
+        
+  nginx:
+    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/nginx-${ENV?}:${TAG?}
+    build:
+      context: ../
+      dockerfile: ./images/nginx/Dockerfile
+      target: ${ENV?}
+      args:
+        - NGINX_VERSION=${NGINX_VERSION?}
+        - APP_CODE_PATH=${APP_CODE_PATH_CONTAINER?}

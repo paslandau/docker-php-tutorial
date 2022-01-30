@@ -1,46 +1,53 @@
-DOCKER_COMPOSE_DIR=./.docker
-DOCKER_COMPOSE_FILE=$(DOCKER_COMPOSE_DIR)/docker-compose.yml
-DEFAULT_CONTAINER=workspace
-DOCKER_COMPOSE=docker-compose -f $(DOCKER_COMPOSE_FILE) --project-directory $(DOCKER_COMPOSE_DIR)
+# Define the default shell
+# @see https://stackoverflow.com/a/14777895/413531 for the OS detection logic
+OS?=undefined
+ifeq ($(OS),Windows_NT)
+	# Windows requires the .exe extension, otherwise the entry is ignored
+	# @see https://stackoverflow.com/a/60318554/413531
+    SHELL := bash.exe
+else
+    SHELL := bash
+endif
 
+# @see https://tech.davis-hansson.com/p/make/ for some make best practices
+# use bash strict mode @see http://redsymbol.net/articles/unofficial-bash-strict-mode/
+# -e 			- instructs bash to immediately exit if any command has a non-zero exit status
+# -u 			- a reference to any variable you haven't previously defined - with the exceptions of $* and $@ - is an error
+# -o pipefail 	- if any command in a pipeline fails, that return code will be used as the return code 
+#				  of the whole pipeline. By default, the pipeline's return code is that of the last command - even if it succeeds.
+# https://unix.stackexchange.com/a/179305
+# -c            - Read and execute commands from string after processing the options. Otherwise, arguments are treated  as filed. Example:
+#                 bash -c "echo foo" # will excecute "echo foo"
+#                 bash "echo foo"    # will try to open the file named "echo foo" and execute it 
+.SHELLFLAGS := -euo pipefail -c
+# display a warning if variables are used but not defined
+MAKEFLAGS += --warn-undefined-variables
+# remove some "magic make behavior"
+MAKEFLAGS += --no-builtin-rules
+
+-include .make/.env
+
+# Common variable to pass arbitrary options to targets
+ARGS?= 
+
+# @see https://www.thapaliya.com/en/writings/well-documented-makefiles/
 DEFAULT_GOAL := help
 help:
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-27s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-40s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-##@ [Docker] Build / Infrastructure
-.docker/.env:
-	cp $(DOCKER_COMPOSE_DIR)/.env.example $(DOCKER_COMPOSE_DIR)/.env
+include .make/*.mk
 
-.PHONY: docker-clean
-docker-clean: ## Remove the .env file for docker
-	rm -f $(DOCKER_COMPOSE_DIR)/.env
+##@ [Make]
 
-.PHONY: docker-init
-docker-init: .docker/.env ## Make sure the .env file exists for docker
-
-.PHONY: docker-build-from-scratch
-docker-build-from-scratch: docker-init ## Build all docker images from scratch, without cache etc. Build a specific image by providing the service name via: make docker-build CONTAINER=<service>
-	$(DOCKER_COMPOSE) rm -fs $(CONTAINER) && \
-	$(DOCKER_COMPOSE) build --pull --no-cache --parallel $(CONTAINER) && \
-	$(DOCKER_COMPOSE) up -d --force-recreate $(CONTAINER)
-
-.PHONY: docker-test
-docker-test: docker-init docker-up ## Run the infrastructure tests for the docker setup
-	sh $(DOCKER_COMPOSE_DIR)/docker-test.sh
-
-.PHONY: docker-build
-docker-build: docker-init ## Build all docker images. Build a specific image by providing the service name via: make docker-build CONTAINER=<service>
-	$(DOCKER_COMPOSE) build --parallel $(CONTAINER) && \
-	$(DOCKER_COMPOSE) up -d --force-recreate $(CONTAINER)
-
-.PHONY: docker-prune
-docker-prune: ## Remove unused docker resources via 'docker system prune -a -f --volumes'
-	docker system prune -a -f --volumes
-
-.PHONY: docker-up
-docker-up: docker-init ## Start all docker containers. To only start one container, use CONTAINER=<service>
-	$(DOCKER_COMPOSE) up -d $(CONTAINER)
-
-.PHONY: docker-down
-docker-down: docker-init ## Stop all docker containers. To only stop one container, use CONTAINER=<service>
-	$(DOCKER_COMPOSE) down $(CONTAINER)
+## Usage: 
+## make-init
+## 
+## make-init ENVS="KEY_1=value1 KEY_2=value2"
+.PHONY: make-init
+make-init: ENVS= ## Initializes the local .makefile/.env file with ENV variables for make
+make-init: 
+	@cp .make/.env.example .make/.env
+	@for variable in $(ENVS); do \
+	  echo $$variable | tee -a .make/.env; \
+	  done
+	@echo "Please update your .make/.env file with your local settings"
