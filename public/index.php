@@ -1,32 +1,55 @@
 <?php
-error_reporting(E_ALL | E_STRICT);
-ini_set('display_errors', 1);
 
-/**
- * @var Redis $redis
- * @var PDO $pdo
- */
-[$redis, $pdo] = require_once __DIR__."/../dependencies.php";
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
 
-$jobId = $_GET["dispatch"] ?? null;
-if ($jobId !== null) {
-    echo "Adding item '$jobId' to queue\n";
-    $redis->lPush("queue", $jobId);
+define('LARAVEL_START', microtime(true));
+
+/*
+|--------------------------------------------------------------------------
+| Check If The Application Is Under Maintenance
+|--------------------------------------------------------------------------
+|
+| If the application is in maintenance / demo mode via the "down" command
+| we will load this file so that any pre-rendered content can be shown
+| instead of starting the framework, which could cause an exception.
+|
+*/
+
+if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+    require $maintenance;
 }
-elseif (isset($_GET["queue"])) {
-    echo "Items in queue\n";
-    var_dump($redis->lRange("queue", 0, 9999999));
-}
-elseif (isset($_GET["db"])) {
-    $stmt = $pdo->query("SELECT * FROM jobs");
-    echo "Items in db\n";
-    var_dump($stmt->fetchAll(PDO::FETCH_COLUMN));
-}else{
-    echo <<<HTML
-        <ul>
-            <li><a href="?dispatch=foo">Dispatch job 'foo' to the queue.</a></li>
-            <li><a href="?queue">Show the queue.</a></li>
-            <li><a href="?db">Show the DB.</a></li>
-        </ul>
-        HTML;
-}
+
+/*
+|--------------------------------------------------------------------------
+| Register The Auto Loader
+|--------------------------------------------------------------------------
+|
+| Composer provides a convenient, automatically generated class loader for
+| this application. We just need to utilize it! We'll simply require it
+| into the script here so we don't need to manually load our classes.
+|
+*/
+
+require __DIR__.'/../vendor/autoload.php';
+
+/*
+|--------------------------------------------------------------------------
+| Run The Application
+|--------------------------------------------------------------------------
+|
+| Once we have the application, we can handle the incoming request using
+| the application's HTTP kernel. Then, we will send the response back
+| to this client's browser, allowing them to enjoy our application.
+|
+*/
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+$kernel = $app->make(Kernel::class);
+
+$response = $kernel->handle(
+    $request = Request::capture()
+)->send();
+
+$kernel->terminate($request, $response);

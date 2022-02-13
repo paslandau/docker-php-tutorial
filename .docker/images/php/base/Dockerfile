@@ -43,7 +43,7 @@ ADD https://php.hernandev.com/key/php-alpine.rsa.pub /etc/apk/keys/php-alpine.rs
 RUN apk --update-cache add ca-certificates && \
     echo "https://php.hernandev.com/v${ALPINE_VERSION}/php-${TARGET_PHP_VERSION}" >> /etc/apk/repositories && \
     apk add --update --no-cache  \
-        php8~=${TARGET_PHP_VERSION} \
+        php-curl~=${TARGET_PHP_VERSION} \
         php-dom~=${TARGET_PHP_VERSION} \
         php-mbstring~=${TARGET_PHP_VERSION} \
         php-pdo_mysql~=${TARGET_PHP_VERSION} \
@@ -51,6 +51,7 @@ RUN apk --update-cache add ca-certificates && \
         php-phar~=${TARGET_PHP_VERSION} \
         php-redis~=${TARGET_PHP_VERSION} \
         php-xml~=${TARGET_PHP_VERSION} \
+        php8~=${TARGET_PHP_VERSION} \
 # make "php" as command available by creating a symlink
 # https://github.com/codecasts/php-alpine/issues/20#issuecomment-350477886    
     && ln -s /usr/bin/php8 /usr/bin/php
