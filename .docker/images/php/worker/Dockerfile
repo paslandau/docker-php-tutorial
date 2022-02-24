@@ -8,7 +8,7 @@ RUN apk add --no-cache --update \
 COPY ./images/php/worker/supervisor/ /etc/supervisor/
 
 ARG PHP_WORKER_PROCESS_NUMBER
-ARG PHP_WORKER_COMMAND="php $APP_CODE_PATH/worker.php"
+ARG PHP_WORKER_COMMAND="php $APP_CODE_PATH/artisan queue:work"
 ARG PHP_WORKER_COMMAND_ARGS
 RUN    sed -i "s/numprocs=__PHP_WORKER_PROCESSES_NUMBER/numprocs=$PHP_WORKER_PROCESS_NUMBER/" /etc/supervisor/supervisord.conf \
     && sed -i "s#command=__PHP_WORKER_COMMAND#command=$PHP_WORKER_COMMAND $PHP_WORKER_COMMAND_ARGS#" /etc/supervisor/supervisord.conf \

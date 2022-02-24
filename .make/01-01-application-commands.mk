@@ -28,5 +28,9 @@ enable-xdebug: ## Enable xdebug in the given container specified by "DOCKER_SERV
 	"$(MAKE)" execute-in-container APP_USER_NAME="root" DOCKER_SERVICE_NAME=$(DOCKER_SERVICE_NAME) COMMAND="sed -i 's/.*zend_extension=xdebug/zend_extension=xdebug/' '/etc/php8/conf.d/zz-app-local.ini'"
 
 .PHONY: disable-xdebug
-disable-xdebug: ## Disable xdebug in the given container specified by "DOCKER_SERVICE_NAME". E.g. "make enable-xdebug DOCKER_SERVICE_NAME=php-fpm"
+disable-xdebug: ## Disable xdebug in the given container specified by "DOCKER_SERVICE_NAME". E.g. "make disable-xdebug DOCKER_SERVICE_NAME=php-fpm"
 	"$(MAKE)" execute-in-container APP_USER_NAME="root" DOCKER_SERVICE_NAME=$(DOCKER_SERVICE_NAME) COMMAND="sed -i 's/.*zend_extension=xdebug/;zend_extension=xdebug/' '/etc/php8/conf.d/zz-app-local.ini'"
+
+.PHONY: clear-queue
+clear-queue: ## Clear the job queue
+	$(EXECUTE_IN_APPLICATION_CONTAINER) php artisan queue:clear $(ARGS)

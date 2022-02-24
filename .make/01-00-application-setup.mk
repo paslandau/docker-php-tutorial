@@ -7,7 +7,7 @@ setup: ## Setup the application
 
 .PHONY: setup-db
 setup-db: ## Setup the DB tables
-	$(EXECUTE_IN_APPLICATION_CONTAINER) php setup.php $(ARGS);
+	$(EXECUTE_IN_APPLICATION_CONTAINER) php artisan app:setup-db $(ARGS);
 
 .PHONY: composer
 composer: ## Run composer commands. Specify the command e.g. via ARGS="install"
