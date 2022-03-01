@@ -49,6 +49,7 @@ DOCKER_COMPOSE_COMMAND:=ENV=$(ENV) \
 DOCKER_COMPOSE:=$(DOCKER_COMPOSE_COMMAND) -f $(DOCKER_COMPOSE_FILE) -f $(DOCKER_COMPOSE_FILE_LOCAL)
 DOCKER_COMPOSE_PHP_BASE:=$(DOCKER_COMPOSE_COMMAND) -f $(DOCKER_COMPOSE_FILE_PHP_BASE)
 
+EXECUTE_IN_ANY_CONTAINER?=
 EXECUTE_IN_WORKER_CONTAINER?=
 EXECUTE_IN_APPLICATION_CONTAINER?=
 
@@ -58,7 +59,7 @@ DOCKER_SERVICE_NAME?=
 # Caution: this only works if the command in the target is prefixed with a $(EXECUTE_IN_*_CONTAINER) variable.
 # If EXECUTE_IN_CONTAINER is NOT defined, we will check if make is ALREADY executed in a docker container.
 # We still need a way to FORCE the execution in a container, e.g. for Gitlab CI, because the Gitlab
-# Runner is executed as a docker container BUT we want to executed commands in OUR OWN docker containers!
+# Runner is executed as a docker container BUT we want to execute commands in OUR OWN docker containers!
 EXECUTE_IN_CONTAINER?=
 ifndef EXECUTE_IN_CONTAINER
 	# check if 'make' is executed in a docker container, see https://stackoverflow.com/a/25518538/413531
@@ -69,7 +70,7 @@ ifndef EXECUTE_IN_CONTAINER
 	endif
 endif
 ifeq ($(EXECUTE_IN_CONTAINER),true)
-	EXECUTE_IN_CONTAINER:=$(DOCKER_COMPOSE) exec -T --user $(APP_USER_NAME) $(DOCKER_SERVICE_NAME)
+	EXECUTE_IN_ANY_CONTAINER:=$(DOCKER_COMPOSE) exec -T --user $(APP_USER_NAME) $(DOCKER_SERVICE_NAME)
 	EXECUTE_IN_APPLICATION_CONTAINER:=$(DOCKER_COMPOSE) exec -T --user $(APP_USER_NAME) $(DOCKER_SERVICE_NAME_APPLICATION)
 	EXECUTE_IN_WORKER_CONTAINER:=$(DOCKER_COMPOSE) exec -T --user $(APP_USER_NAME) $(DOCKER_SERVICE_NAME_PHP_WORKER)
 endif

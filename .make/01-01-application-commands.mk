@@ -7,21 +7,21 @@ restart-php-fpm: ## Restart the php-fpm service
 
 .PHONY: restart-workers
 restart-workers: ## Restart all workers 
-	$(EXECUTE_IN_WORKER_CONTAINER) supervisorctl restart all;
+	$(EXECUTE_IN_WORKER_CONTAINER) supervisorctl restart all
 
 .PHONY: stop-workers
 stop-workers: ## Stop all workers 
-	$(EXECUTE_IN_WORKER_CONTAINER) supervisorctl stop worker:*;
+	$(EXECUTE_IN_WORKER_CONTAINER) supervisorctl stop worker:*
 
 .PHONY: start-workers
 start-workers: ## start all workers 
-	$(EXECUTE_IN_WORKER_CONTAINER) supervisorctl start worker:*;
+	$(EXECUTE_IN_WORKER_CONTAINER) supervisorctl start worker:*
 
 .PHONY: execute-in-container
 execute-in-container: ## Execute a command in a container. E.g. via "make execute-in-container DOCKER_SERVICE_NAME=php-fpm COMMAND="echo 'hello'"
 	@$(if $(DOCKER_SERVICE_NAME),,$(error DOCKER_SERVICE_NAME is undefined))
 	@$(if $(COMMAND),,$(error COMMAND is undefined))
-	$(EXECUTE_IN_CONTAINER) $(COMMAND);
+	$(EXECUTE_IN_ANY_CONTAINER) $(COMMAND)
 
 .PHONY: enable-xdebug
 enable-xdebug: ## Enable xdebug in the given container specified by "DOCKER_SERVICE_NAME". E.g. "make enable-xdebug DOCKER_SERVICE_NAME=php-fpm"
