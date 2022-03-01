@@ -26,7 +26,9 @@ services:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
     networks:
       - network
-        
+    extra_hosts:
+      - host.docker.internal:host-gateway
+      
   php-worker:
     environment:
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
@@ -40,6 +42,8 @@ services:
       - "seccomp=unconfined"
     networks:
       - network
+    extra_hosts:
+      - host.docker.internal:host-gateway
   
   nginx:
     volumes:
