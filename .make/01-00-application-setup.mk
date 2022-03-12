@@ -2,8 +2,8 @@
 
 .PHONY: setup
 setup: ## Setup the application
-	"$(MAKE)" setup-db
 	"$(MAKE)" composer ARGS="install"
+	"$(MAKE)" setup-db
 
 .PHONY: setup-db
 setup-db: ## Setup the DB tables
