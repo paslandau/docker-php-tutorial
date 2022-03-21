@@ -23,21 +23,21 @@ info "Stopping workers"
 make stop-workers
 
 info "Ensuring that queue and db are empty"
-curl -sS "http://app.local/?queue"
-curl -sS "http://app.local/?db"
+curl -sS "http://127.0.0.1/?queue"
+curl -sS "http://127.0.0.1/?db"
 
 info "Dispatching a job 'foo'"
-curl -sS "http://app.local/?dispatch=foo"
+curl -sS "http://127.0.0.1/?dispatch=foo"
 
 info "Asserting the job 'foo' is on the queue"
-curl -sS "http://app.local/?queue"
+curl -sS "http://127.0.0.1/?queue"
 
 info "Starting the workers"
 make start-workers
 sleep 1
 
 info "Asserting the queue is now empty"
-curl -sS "http://app.local/?queue"
+curl -sS "http://127.0.0.1/?queue"
 
 info "Asserting the db now contains the job 'foo'"
-curl -sS "http://app.local/?db"
+curl -sS "http://127.0.0.1/?db"
