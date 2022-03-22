@@ -39,14 +39,15 @@ to be automatically notified when a new part gets published. I'll also probably 
 - [Setting up PHP, PHP-FPM and NGINX for local development on Docker](#setting-up-php-php-fpm-and-nginx-for-local-development-on-docker)
 - [Setting up PhpStorm with Xdebug for local development on Docker](#setting-up-phpstorm-with-xdebug-for-local-development-on-docker)
 - [Structuring the Docker setup for PHP Projects](#structuring-the-docker-setup-for-php-projects)
+- [PhpStorm, Docker and Xdebug 3 on PHP 8.1 in 2022](#php-storm-docker-and-xdebug-3-on-php-8-1-in-2022)
+- [Run Laravel 9 on Docker in 2022](#run-laravel-9-on-docker-in-2022)
 
 ### Planned (already used by us but not put into writing):
 
-- [Building a CI Pipeline with Jenkins for Dockerized PHP Applications](#building-a-ci-pipeline-with-jenkins-for-dockerized-php-applications)
+- [CI Pipelines for dockerized PHP Apps with Github & Gitlab](#ci-pipelines-for-dockerized-php-apps-with-github-gitlab)
 
 ### Roadmap (wow much want, such little time):
 
-- [Deploying Dockerized PHP Applications via CD Pipeline with Jenkins to Production](#deploying-dockerized-php-applications-via-cd-pipeline-with-jenkins-to-production)
 - [Scaling Dockerized PHP Applications with Terraform and Kubernetes on GCP/AWS](#scaling-dockerized-php-applications-with-terraform-and-kubernetes-on-gcpaws)
 
 ### Setting up PHP, PHP-FPM and NGINX for local development on Docker
@@ -54,8 +55,7 @@ to be automatically notified when a new part gets published. I'll also probably 
 - Status: published ✓
 - Link: https://www.pascallandau.com/blog/php-php-fpm-and-nginx-on-docker-in-windows-10/
 - Branch:
-  [Part 1](https://github.com/paslandau/docker-php-tutorial/tree/part_1_setting-up-php-php-fpm-and
-  -nginx-for-local-development-on-docker)
+  [Part 1](https://github.com/paslandau/docker-php-tutorial/tree/part_1_setting-up-php-php-fpm-and-nginx-for-local-development-on-docker)
 
 A primer on Docker. What is Docker? How to install it / transition from Vagrant? How to interact
 with containers? How to organize multiple services (php-cli, php-fpm, nginx) via docker-compose?
@@ -95,7 +95,7 @@ An update of the previous article (Part 3) with the learnings of the past 3 year
 
 ### PhpStorm, Docker and Xdebug 3 on PHP 8.1 in 2022
 
-- Status: Scheduled for 2022-03-22
+- Status: published ✓
 - Link: https://www.pascallandau.com/blog/phpstorm-docker-xdebug-3-php-8-1-in-2022/
 - Branch:
   [Part 4.2](https://github.com/paslandau/docker-php-tutorial/tree/part-4-2-phpstorm-docker-xdebug-3-php-8-1-in-2022)
@@ -114,7 +114,7 @@ challenges (from the browser, from the CLI, from a long running worker process).
 A step-by-step walkthrough to set up a new Laravel 9 project on the docker setup of this 
 tutorial, using a couple of common Laravel components (Commands, Controllers, Queues, Databases).
 
-### CI Pipelines for dockerized PHP Apps with Github & Gitlab [Tutorial Part 5]
+### CI Pipelines for dockerized PHP Apps with Github & Gitlab
 
 - Status: in progress
 - Link:
