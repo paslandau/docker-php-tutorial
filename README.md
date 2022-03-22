@@ -34,12 +34,18 @@ Please subscribe to my [RSS Feed](https://www.pascallandau.com/feed.xml) and/or
 to be automatically notified when a new part gets published. I'll also probably brag on
 [Twitter](https://twitter.com/PascalLandau) about it ;)
 
+### Playlist
+
+There a 
+[Youtube playlist](https://www.youtube.com/watch?v=YYI5mTjFDuA&list=PLScVLZNShARRTO-ebug0yzbiXDxtw0rtg) 
+available containing all videos of the tutorial series.
+
 ### Published
 
 - [Setting up PHP, PHP-FPM and NGINX for local development on Docker](#setting-up-php-php-fpm-and-nginx-for-local-development-on-docker)
 - [Setting up PhpStorm with Xdebug for local development on Docker](#setting-up-phpstorm-with-xdebug-for-local-development-on-docker)
 - [Structuring the Docker setup for PHP Projects](#structuring-the-docker-setup-for-php-projects)
-- [PhpStorm, Docker and Xdebug 3 on PHP 8.1 in 2022](#php-storm-docker-and-xdebug-3-on-php-8-1-in-2022)
+- [PhpStorm, Docker and Xdebug 3 on PHP 8.1 in 2022](#phpstorm-docker-and-xdebug-3-on-php-81-in-2022)
 - [Run Laravel 9 on Docker in 2022](#run-laravel-9-on-docker-in-2022)
 
 ### Planned (already used by us but not put into writing):
