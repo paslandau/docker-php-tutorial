@@ -112,7 +112,7 @@ challenges (from the browser, from the CLI, from a long running worker process).
 
 ### Run Laravel 9 on Docker in 2022
 
-- Status: Scheduled for 2022-03-23
+- Status: published ✓
 - Link: https://www.pascallandau.com/blog/run-laravel-9-docker-in-2022/
 - Branch:
   [Part 4.3](https://github.com/paslandau/docker-php-tutorial/tree/part-4-3-run-laravel-9-docker-in-2022)
