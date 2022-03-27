@@ -1,11 +1,4 @@
-# Run Laravel 9 on Docker in 2022
-See [Run Laravel 9 on Docker in 2022](https://www.pascallandau.com/blog/run-laravel-9-docker-in-2022/)
+# Set up PHP QA tools and control them via make
+See [Set up PHP QA tools and control them via make](https://www.pascallandau.com/blog/php-qa-tools-make-docker/)
 
-See [the full list of tutorials in the master branch](https://github.m/paslandau/docker-php-tutorial#tutorials).
-
-## Getting started
-````
-git clone https://github.com/paslandau/docker-php-tutorial.git
-cd docker-php-tutorial
-git checkout part-4-3-run-laravel-9-docker-in-2022
-````
+See [the full list of tutorials in the master branch](https://github.com/paslandau/docker-php-tutorial#tutorials)

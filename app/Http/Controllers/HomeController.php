@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\InsertInDbJob;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -10,13 +11,21 @@ use Illuminate\Http\Request;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Queue\RedisQueue;
 use Illuminate\Routing\Controller;
+use Redis;
 
 class HomeController extends Controller
 {
     use DispatchesJobs;
 
+    public function __construct(private readonly Factory $factory)
+    {
+    }
+
     public function __invoke(Request $request, QueueManager $queueManager, DatabaseManager $databaseManager): View
     {
+        /**
+         * @var string|null $jobId
+         */
         $jobId = $request->input("dispatch") ?? null;
         if ($jobId !== null) {
             $job = new InsertInDbJob($jobId);
@@ -31,10 +40,13 @@ class HomeController extends Controller
              * @var RedisQueue $redisQueue
              */
             $redisQueue = $queueManager->connection();
-            $redis =  $redisQueue->getRedis()->connection();
+            $redis      = $redisQueue->getRedis()->connection();
+            /**
+             * @var Redis $redis
+             */
             $queueItems = $redis->lRange("queues:default", 0, 99999);
 
-            $content = "Items in queue\n".var_export($queueItems, true);
+            $content = "Items in queue\n" . var_export($queueItems, true);
 
             return $this->getView($content);
         }
@@ -42,7 +54,7 @@ class HomeController extends Controller
         if ($request->has("db")) {
             $items = $databaseManager->select($databaseManager->raw("SELECT * FROM jobs"));
 
-            $content = "Items in db\n".var_export($items, true);
+            $content = "Items in db\n" . var_export($items, true);
 
             return $this->getView($content);
         }
@@ -59,6 +71,6 @@ class HomeController extends Controller
 
     private function getView(string $content): View
     {
-        return view('home')->with(["content" => $content]);
+        return $this->factory->make('home')->with(["content" => $content]);
     }
 }
