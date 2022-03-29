@@ -26,9 +26,16 @@ RUN addgroup -g $APP_GROUP_ID $APP_GROUP_NAME && \
     adduser -D -u $APP_USER_ID -s /bin/bash $APP_USER_NAME -G $APP_GROUP_NAME && \
     mkdir -p $APP_CODE_PATH && \
     chown $APP_USER_NAME: $APP_CODE_PATH
-    
-RUN apk add --update --no-cache \
+ 
+# install git-secret
+# @see https://git-secret.io/installation#alpine
+ADD https://gitsecret.jfrog.io/artifactory/api/security/keypair/public/repositories/git-secret-apk /etc/apk/keys/git-secret-apk.rsa.pub
+
+RUN echo "https://gitsecret.jfrog.io/artifactory/git-secret-apk/all/main" >> /etc/apk/repositories  && \
+    apk add --update --no-cache \
         bash \
+        git-secret \
+        gnupg \
         make \
         strace \
         sudo \

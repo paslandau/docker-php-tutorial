@@ -20,6 +20,7 @@ class HomeControllerTest extends TestCase
 
     /**
      * @dataProvider __invoke_dataProvider
+     * @param array<string> $params
      */
     public function test___invoke(array $params, string $expected): void
     {
@@ -35,6 +36,9 @@ class HomeControllerTest extends TestCase
         ;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __invoke_dataProvider(): array
     {
         return [

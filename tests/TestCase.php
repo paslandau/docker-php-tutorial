@@ -64,6 +64,9 @@ abstract class TestCase extends BaseTestCase
             if ($e->getCode() !== 1049) {
                 throw $e;
             }
+            /**
+             * @var array<string, mixed> $config
+             */
             $config             = $connection->getConfig();
             $config["database"] = "";
 

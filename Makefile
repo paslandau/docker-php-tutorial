@@ -1,15 +1,23 @@
-# Define the default shell
-# @see https://stackoverflow.com/a/14777895/413531 for the OS detection logic
-OS?=undefined
+# @see https://tech.davis-hansson.com/p/make/
+# define the default shell
+SHELL := bash
+
+# Add the -T options to "docker compose exec" to avoid the 
+# "panic: the handle is invalid"
+# error on Windows and Linux 
+# @see https://stackoverflow.com/a/70856332/413531
+DOCKER_COMPOSE_EXEC_OPTIONS=-T
+
+# OS is defined for WIN systems, so "uname" will not be executed
+OS?=$(shell uname)
 ifeq ($(OS),Windows_NT)
 	# Windows requires the .exe extension, otherwise the entry is ignored
 	# @see https://stackoverflow.com/a/60318554/413531
     SHELL := bash.exe
-    # make sure that MinGW / MSYSY does not automatically convert paths starting with /
-    # @see https://stackoverflow.com/a/48348531
-    export MSYS_NO_PATHCONV=1
-else
-    SHELL := bash
+else ifeq ($(OS),Darwin)
+    # On Mac, the -T must be omitted to avoid cluttered output
+    # @see https://github.com/moby/moby/issues/37366#issuecomment-401157643
+	DOCKER_COMPOSE_EXEC_OPTIONS=
 endif
 
 # @see https://tech.davis-hansson.com/p/make/ for some make best practices

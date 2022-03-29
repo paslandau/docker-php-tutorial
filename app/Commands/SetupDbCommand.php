@@ -19,6 +19,9 @@ class SetupDbCommand extends Command
      */
     protected $description = "Run the application database setup";
 
+    /**
+     * @return array<array{?string, ?string, InputOption::*, string}>
+     */
     protected function getOptions(): array
     {
         return [
@@ -31,7 +34,7 @@ class SetupDbCommand extends Command
         ];
     }
 
-    public function handle()
+    public function handle(): void
     {
         $drop = $this->option("drop");
         if ($drop) {
