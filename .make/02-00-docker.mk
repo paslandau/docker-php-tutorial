@@ -1,8 +1,3 @@
-# For local builds we always want to use "latest" as tag per default
-ifeq ($(ENV),local)
-	TAG:=latest
-endif
-
 # Enable buildkit for docker and docker-compose by default for every environment.
 # For specific environments (e.g. MacBook with Apple Silicon M1 CPU) it should be turned off to work stable
 # - this can be done in the .make/.env file
@@ -31,10 +26,18 @@ DOCKER_SERVICE_NAME_APPLICATION:=application
 DOCKER_DIR:=./.docker
 DOCKER_ENV_FILE:=$(DOCKER_DIR)/.env
 DOCKER_COMPOSE_DIR:=$(DOCKER_DIR)/docker-compose
-DOCKER_COMPOSE_FILE:=$(DOCKER_COMPOSE_DIR)/docker-compose.yml
+DOCKER_COMPOSE_FILE_LOCAL_CI:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.ci.yml
+DOCKER_COMPOSE_FILE_CI:=$(DOCKER_COMPOSE_DIR)/docker-compose.ci.yml
 DOCKER_COMPOSE_FILE_LOCAL:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.yml
 DOCKER_COMPOSE_FILE_PHP_BASE:=$(DOCKER_COMPOSE_DIR)/docker-compose-php-base.yml
 DOCKER_COMPOSE_PROJECT_NAME:=dofroscra_$(ENV)
+
+# we need to "assemble" the correct combination of docker-compose.yml config files
+ifeq ($(ENV),ci)
+	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI) -f $(DOCKER_COMPOSE_FILE_CI)
+else ifeq ($(ENV),local)
+	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI) -f $(DOCKER_COMPOSE_FILE_LOCAL)
+endif
 
 # we need a couple of environment variables for docker-compose so we define a make-variable that we can
 # then reference later in the Makefile without having to repeat all the environment variables
@@ -46,7 +49,7 @@ DOCKER_COMPOSE_COMMAND:=ENV=$(ENV) \
  APP_GROUP_NAME=$(APP_GROUP_NAME) \
  docker compose -p $(DOCKER_COMPOSE_PROJECT_NAME) --env-file $(DOCKER_ENV_FILE)
 
-DOCKER_COMPOSE:=$(DOCKER_COMPOSE_COMMAND) -f $(DOCKER_COMPOSE_FILE) -f $(DOCKER_COMPOSE_FILE_LOCAL)
+DOCKER_COMPOSE:=$(DOCKER_COMPOSE_COMMAND) $(DOCKER_COMPOSE_FILES)
 DOCKER_COMPOSE_PHP_BASE:=$(DOCKER_COMPOSE_COMMAND) -f $(DOCKER_COMPOSE_FILE_PHP_BASE)
 
 EXECUTE_IN_ANY_CONTAINER?=

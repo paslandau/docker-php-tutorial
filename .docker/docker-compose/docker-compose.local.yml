@@ -1,19 +1,15 @@
 version: '3.7'
 
-networks:
-  network:
-    driver: ${NETWORKS_DRIVER?}
-
-volumes:
-  mysql:
-    name: mysql-${ENV?}
-    driver: ${VOLUMES_DRIVER?}
-  redis:
-    name: redis-${ENV?}
-    driver: ${VOLUMES_DRIVER?}
-
 services:
   php-fpm:
+    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-fpm-${ENV?}:${TAG?}
+    build:
+      context: ../
+      dockerfile: ./images/php/fpm/Dockerfile
+      target: ${ENV?}
+      args:
+        - BASE_IMAGE=${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-base-${ENV?}:${TAG?}
+        - TARGET_PHP_VERSION=${PHP_VERSION?}
     environment:
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
     # cap_add and security_opt are required to enable strace
@@ -30,6 +26,14 @@ services:
       - host.docker.internal:host-gateway
       
   php-worker:
+    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-worker-${ENV?}:${TAG?}
+    build:
+      context: ../
+      dockerfile: ./images/php/worker/Dockerfile
+      target: ${ENV?}
+      args:
+        - BASE_IMAGE=${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-base-${ENV?}:${TAG?}
+        - PHP_WORKER_PROCESS_NUMBER=${PHP_WORKER_PROCESS_NUMBER:-4}
     environment:
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
     volumes:
@@ -46,6 +50,14 @@ services:
       - host.docker.internal:host-gateway
   
   nginx:
+    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/nginx-${ENV?}:${TAG?}
+    build:
+      context: ../
+      dockerfile: ./images/nginx/Dockerfile
+      target: ${ENV?}
+      args:
+        - NGINX_VERSION=${NGINX_VERSION?}
+        - APP_CODE_PATH=${APP_CODE_PATH_CONTAINER?}
     volumes:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
     ports:
@@ -59,14 +71,9 @@ services:
       - php-fpm
 
   application:
-    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/application-${ENV?}:${TAG?}
     build:
-      context: ../
-      dockerfile: ./images/php/application/Dockerfile
       args:
-        - BASE_IMAGE=${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-base-${ENV?}:${TAG?}
-        - APP_SSH_PASSWORD=${APP_SSH_PASSWORD?}
-        - ENV=${ENV?}
+        - APP_SSH_PASSWORD=${APP_SSH_PASSWORD?}    
     environment:
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
     # cap_add and security_opt are required to enable strace
@@ -80,35 +87,17 @@ services:
     ports:
       - "${APPLICATION_SSH_HOST_PORT:-2222}:22"
     tty: true
-    networks:
-      - network
     extra_hosts:
       - host.docker.internal:host-gateway
    
   mysql:
-    image: mysql:${MYSQL_VERSION?}
-    platform: linux/amd64
-    environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE:-application_db}
-      - MYSQL_USER=${MYSQL_USER:-application_user}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD?}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD?}
-      - TZ=${TIMEZONE:-UTC}
     volumes:
       - mysql:/var/lib/mysql
-    networks:
-      - network
     ports:
       - "${MYSQL_HOST_PORT:-3306}:3306"
   
   redis:
-    image: redis:${REDIS_VERSION?}
-    ports:
-      - "${REDIS_HOST_PORT:-6379}:6379"
-    # @see https://stackoverflow.com/a/69498392/413531
-    command: >
-      --requirepass ${REDIS_PASSWORD?}
     volumes:
       - redis:/data
-    networks:
-      - network
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"

@@ -1,0 +1,80 @@
+name: Docker CI build
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v1
+          
+      - name: store gpg key
+        run: |
+          # Note: make sure to wrap the secret in double quotes (")
+          echo "${{ secrets.GPG_KEY }}" > ./secret.gpg
+    
+      - name: setup tools
+        run : |
+          # variables can only be shared via ENV
+          # @see https://docs.github.com/en/github-ae@latest/actions/learn-github-actions/environment-variables
+          # to set them in a step, we must append them to $GITHUB_ENV
+          # https://stackoverflow.com/a/57969570/413531
+          run: echo "DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}" >> $GITHUB_ENV
+          # install docker compose
+          # @see https://docs.docker.com/compose/cli-command/#install-on-linux
+          # @see https://github.com/docker/compose/issues/8630#issuecomment-1073166114
+          mkdir -p $DOCKER_CONFIG/cli-plugins
+          curl -sSL https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-$(uname -m) -o $DOCKER_CONFIG/cli-plugins/docker-compose
+          chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+          # install docker-compose-wait to wait for the mysql container to become available
+          # @see https://github.com/ufoscout/docker-compose-wait
+          curl -sSL https://github.com/ufoscout/docker-compose-wait/releases/download/2.9.0/wait -o ./wait
+          chmod +x ./wait
+      
+      - name: debug
+        run: |
+          docker compose version
+          docker --version
+          cat /etc/*-release
+
+      - name: setup docker
+        run: |
+          make make-init ENVS="ENV=ci TAG=latest EXECUTE_IN_CONTAINER=true"
+          make docker-build
+          mkdir .build && chmod 777 .build
+
+      - name: start docker
+        run: |
+          make docker-up
+          docker logs dofroscra_ci-mysql-1
+          make gpg-init
+          make secret-decrypt
+          
+      - name: qa
+        run: |
+          # Run the tests and qa tools but only store the error instead of failing immediately
+          # @see https://stackoverflow.com/a/59200738/413531
+          run: make qa || echo "FAILED=true" >> $GITHUB_ENV
+            
+      - name: test
+        run: |
+          # We need to wait until mysql and redis are available.
+          # Both containers forward their default ports to the host system, so that we can check 127.0.0.1
+          docker ps
+          docker logs dofroscra_ci-mysql-1
+          # TODO: try smarter healthcheck directly via docker compose: https://stackoverflow.com/questions/42567475/docker-compose-check-if-mysql-connection-is-ready
+          WAIT_TIMEOUT=30 WAIT_HOSTS=127.0.0.1:3306,127.0.0.1:6379 ./wait
+          ##- run: sleep 10
+          docker logs dofroscra_ci-mysql-1
+          make test || echo "FAILED=true" >> $GITHUB_ENV
+               
+      - name: evaluate results
+          if [ "$FAILED" == "true" ]; then exit 1; fi
+      
+      - name: upload build artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: build-artifacts
+          path: ./.build

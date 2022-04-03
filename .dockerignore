@@ -1,0 +1,6 @@
+.env
+.git
+.idea
+.phpunit.result.cache
+secret.gpg
+vendor/

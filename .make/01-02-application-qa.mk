@@ -17,7 +17,7 @@ NO_COLOR:=\033[0m
 
 # Tool CLI config
 PHPUNIT_CMD=php vendor/bin/phpunit
-PHPUNIT_ARGS= -c phpunit.xml
+PHPUNIT_ARGS= -c phpunit.xml --log-junit .build/report.xml
 PHPUNIT_FILES=
 PHPSTAN_CMD=php vendor/bin/phpstan analyse
 PHPSTAN_ARGS=--level=9
@@ -97,7 +97,7 @@ composer-require-checker: ## Run dependency checker
 
 .PHONY: qa
 qa: ## Run code quality tools on all files
-	@$(EXECUTE_IN_APPLICATION_CONTAINER) make -j $(CORES) -k --no-print-directory --output-sync=target qa-exec NO_PROGRESS=true
+	"$(MAKE)" -j $(CORES) -k --no-print-directory --output-sync=target qa-exec NO_PROGRESS=true
 
 .PHONY: qa-exec
 qa-exec: phpstan \

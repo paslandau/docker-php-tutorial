@@ -8,3 +8,4 @@ secret.gpg
 .gitsecret/keys/pubring.kbx~
 !*.secret
 passwords.txt
+.build
