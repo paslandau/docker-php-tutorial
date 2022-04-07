@@ -8,16 +8,3 @@ services:
       - ${APP_CODE_PATH_HOST?}/secret.gpg:${APP_CODE_PATH_CONTAINER?}/secret.gpg:ro
       # mount a folder for build artifacts 
       - ${APP_CODE_PATH_HOST?}/.build:${APP_CODE_PATH_CONTAINER?}/.build
-    # tty: true 
-    # will keep the container running, even though there is no 
-    # long-running process defined as entrypoint for the container
-    # @see https://stackoverflow.com/a/55953120
-    tty: true
-
-  mysql:
-    ports:
-      - "3306:3306"
-  
-  redis:
-    ports:
-      - "6379:6379"

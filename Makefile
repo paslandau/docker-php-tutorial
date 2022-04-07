@@ -38,7 +38,7 @@ MAKEFLAGS += --no-builtin-rules
 
 # include the default variables
 include .make/variables.env
-# include the locally overriden variables
+# include the local variables
 -include .make/.env
 
 # Common variable to pass arbitrary options to targets
@@ -53,10 +53,7 @@ include .make/*.mk
 
 ##@ [Make]
 
-## Usage: 
-## make-init
-## 
-## make-init ENVS="KEY_1=value1 KEY_2=value2"
+ENVS?=ENV=local TAG=latest
 .PHONY: make-init
 make-init: ## Initializes the local .makefile/.env file with ENV variables for make. Use via ENVS="KEY_1=value1 KEY_2=value2"
 	@$(if $(ENVS),,$(error ENVS is undefined))
@@ -64,6 +61,5 @@ make-init: ## Initializes the local .makefile/.env file with ENV variables for m
 	@for variable in $(ENVS); do \
 	  echo $$variable | tee -a .make/.env > /dev/null 2>&1; \
 	done
-	@echo "Created local .make/.env file with the following content:" 
-	@cat .make/.env 
+	@echo "Created a local .make/.env file"
 

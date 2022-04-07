@@ -86,7 +86,6 @@ services:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
     ports:
       - "${APPLICATION_SSH_HOST_PORT:-2222}:22"
-    tty: true
     extra_hosts:
       - host.docker.internal:host-gateway
    

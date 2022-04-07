@@ -26,11 +26,16 @@ RUN addgroup -g $APP_GROUP_ID $APP_GROUP_NAME && \
     adduser -D -u $APP_USER_ID -s /bin/bash $APP_USER_NAME -G $APP_GROUP_NAME && \
     mkdir -p $APP_CODE_PATH && \
     chown $APP_USER_NAME: $APP_CODE_PATH
- 
+    
 # install git-secret
 # @see https://git-secret.io/installation#alpine
 ADD https://gitsecret.jfrog.io/artifactory/api/security/keypair/public/repositories/git-secret-apk /etc/apk/keys/git-secret-apk.rsa.pub
 
+# FYI, we are NOT using a cache mount to store the apk cache via
+#   RUN --mount=type=cache,target=/var/cache/apk ln -vs /var/cache/apk /etc/apk/cache && \
+# @see https://github.com/FernandoMiguel/BuildKit#new-dockerfile
+# @see https://wiki.alpinelinux.org/wiki/Local_APK_cache#Enabling_Local_Cache_on_HDD_installs
+# because we run --update anyways to get the latest files
 RUN echo "https://gitsecret.jfrog.io/artifactory/git-secret-apk/all/main" >> /etc/apk/repositories  && \
     apk add --update --no-cache \
         bash \
@@ -39,7 +44,7 @@ RUN echo "https://gitsecret.jfrog.io/artifactory/git-secret-apk/all/main" >> /et
         make \
         strace \
         sudo \
-        vim
+        vim 
 
 # install PHP
 # Note: we need to use a custom apk repository because the official ones will
@@ -47,9 +52,10 @@ RUN echo "https://gitsecret.jfrog.io/artifactory/git-secret-apk/all/main" >> /et
 # @see https://github.com/codecasts/php-alpine
 ADD https://php.hernandev.com/key/php-alpine.rsa.pub /etc/apk/keys/php-alpine.rsa.pub
 
-RUN apk --update-cache add ca-certificates && \
+#RUN --mount=type=cache,target=/var/cache/apk ln -vs /var/cache/apk /etc/apk/cache && \
+RUN apk add ca-certificates && \
     echo "https://php.hernandev.com/v${ALPINE_VERSION}/php-${TARGET_PHP_VERSION}" >> /etc/apk/repositories && \
-    apk add --update --no-cache  \
+    apk add --no-cache \
         php-curl~=${TARGET_PHP_VERSION} \
         php-dom~=${TARGET_PHP_VERSION} \
         php-mbstring~=${TARGET_PHP_VERSION} \
@@ -62,6 +68,7 @@ RUN apk --update-cache add ca-certificates && \
 # make "php" as command available by creating a symlink
 # https://github.com/codecasts/php-alpine/issues/20#issuecomment-350477886    
     && ln -s /usr/bin/php8 /usr/bin/php
+
 
 # make bash default shell
 RUN sed -e 's;/bin/ash$;/bin/bash;g' -i /etc/passwd
@@ -79,7 +86,7 @@ WORKDIR $APP_CODE_PATH
 FROM base as codebase
 
 # By only copying the composer files required to run composer install
-# the layer will be cached and only invalidated when the composer depencies are changed
+# the layer will be cached and only invalidated when the composer dependencies are changed
 COPY ./composer.json /dependencies/
 COPY ./composer.lock /dependencies/
 
@@ -88,7 +95,7 @@ COPY ./composer.lock /dependencies/
 RUN --mount=type=cache,target=/tmp/.composer \
     cd /dependencies && \
     # COMPOSER_HOME=/tmp/.composer sets the home directory of composer that
-    # also controls where composer looks for the the cache 
+    # also controls where composer looks for the cache 
     # so we don't have to download dependencies again (if they are cached)
     COMPOSER_HOME=/tmp/.composer composer install --no-scripts --no-plugins --no-progress -o 
 
@@ -104,7 +111,6 @@ RUN mv /dependencies/vendor /codebase/vendor && \
 
 FROM base as ci
 
-# copy the codebase
 COPY --from=codebase --chown=$APP_USER_NAME:$APP_GROUP_NAME /codebase $APP_CODE_PATH
 
 FROM base as local

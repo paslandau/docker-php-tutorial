@@ -1,6 +1,15 @@
+# gitignore
+!.env.example
 .env
-.git
 .idea
 .phpunit.result.cache
-secret.gpg
 vendor/
+secret.gpg
+.gitsecret/keys/random_seed
+.gitsecret/keys/pubring.kbx~
+!*.secret
+passwords.txt
+.build
+
+# additionally ignored files
+.git

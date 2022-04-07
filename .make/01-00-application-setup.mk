@@ -37,7 +37,7 @@ gpg-export-private-key: ## Export a gpg private key e.g. via EMAIL="john.doe@exa
 .PHONY: gpg-import
 gpg-import: ## Import a gpg key file e.g. via GPG_KEY_FILES="/path/to/file /path/to/file2"
 	@$(if $(GPG_KEY_FILES),,$(error GPG_KEY_FILES is undefined))
-	"$(MAKE)" gpg ARGS="--import --batch --yes --pinentry-mode loopback $(GPG_KEY_FILES)"
+	"$(MAKE)" -s gpg ARGS="--import --batch --yes --pinentry-mode loopback $(GPG_KEY_FILES)"
 
 .PHONY: gpg-import-default-secret-key
 gpg-import-default-secret-key: ## Import the default secret key

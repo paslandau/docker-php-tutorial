@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# This script waits for a docker service to become "healthy"
-# by chcking the .State.Health.Status info of the the docker inspect output.
-# It check up to $max times in a interval of $interval seconds.
+# This script waits for a docker `$service` to become "healthy"
+# by checking the `.State.Health.Status` info of the `docker inspect` command.
+# It will check up to `$max` times in a interval of `$interval` seconds.
 # @see https://unix.stackexchange.com/a/82610 and https://unix.stackexchange.com/a/137639 for the retry logic
 # @see https://stackoverflow.com/a/42738182/413531 for inspecting the "health" status via docker
 # @see https://stackoverflow.com/questions/6482377/check-existence-of-input-argument-in-a-bash-shell-script#comment14155976_6482403 for handling optional arguments

@@ -1,6 +1,17 @@
-name: Docker CI build
+name: CI build and test
 
-on: [push]
+on:
+  # automatically run for pull request and for pushes to branch "part-7-ci-pipeline-docker-php-gitlab-github"
+  # @see https://stackoverflow.com/a/58142412/413531
+  push:
+    branches:
+      - part-7-ci-pipeline-docker-php-gitlab-github
+  pull_request: {}
+  # enable to trigger the action manually
+  # @see https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
+  # CAUTION: there is a known bug that makes the "button to trigger the run" not show up
+  # @see https://github.community/t/workflow-dispatch-workflow-not-showing-in-actions-tab/130088/29
+  workflow_dispatch: {}
 
 jobs:
   build:
@@ -10,71 +21,69 @@ jobs:
     steps:
       - uses: actions/checkout@v1
           
-      - name: store gpg key
+      - name: start timer
+        run: |
+          echo "START_TOTAL=$(date +%s)" > $GITHUB_ENV
+          
+      - name: STORE GPG KEY
         run: |
           # Note: make sure to wrap the secret in double quotes (")
           echo "${{ secrets.GPG_KEY }}" > ./secret.gpg
     
-      - name: setup tools
+      - name: SETUP TOOLS
         run : |
-          # variables can only be shared via ENV
-          # @see https://docs.github.com/en/github-ae@latest/actions/learn-github-actions/environment-variables
-          # to set them in a step, we must append them to $GITHUB_ENV
-          # https://stackoverflow.com/a/57969570/413531
-          run: echo "DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}" >> $GITHUB_ENV
+          DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
           # install docker compose
           # @see https://docs.docker.com/compose/cli-command/#install-on-linux
           # @see https://github.com/docker/compose/issues/8630#issuecomment-1073166114
-          mkdir -p $DOCKER_CONFIG/cli-plugins
+          mkdir -p $DOCKER_CONFIG/cli-plugins 
           curl -sSL https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-$(uname -m) -o $DOCKER_CONFIG/cli-plugins/docker-compose
           chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
-          # install docker-compose-wait to wait for the mysql container to become available
-          # @see https://github.com/ufoscout/docker-compose-wait
-          curl -sSL https://github.com/ufoscout/docker-compose-wait/releases/download/2.9.0/wait -o ./wait
-          chmod +x ./wait
       
-      - name: debug
+      - name: DEBUG
         run: |
           docker compose version
           docker --version
           cat /etc/*-release
 
-      - name: setup docker
+      - name: SETUP DOCKER
         run: |
-          make make-init ENVS="ENV=ci TAG=latest EXECUTE_IN_CONTAINER=true"
+          make make-init ENVS="ENV=ci TAG=latest EXECUTE_IN_CONTAINER=true GPG_PASSWORD=${{ secrets.GPG_PASSWORD }}"
           make docker-build
           mkdir .build && chmod 777 .build
-
-      - name: start docker
+          
+      - name: START DOCKER
         run: |
           make docker-up
-          docker logs dofroscra_ci-mysql-1
           make gpg-init
-          make secret-decrypt
+          make secret-decrypt-with-password
           
-      - name: qa
+      - name: QA
         run: |
           # Run the tests and qa tools but only store the error instead of failing immediately
           # @see https://stackoverflow.com/a/59200738/413531
-          run: make qa || echo "FAILED=true" >> $GITHUB_ENV
+          make qa || echo "FAILED=qa" >> $GITHUB_ENV
             
-      - name: test
+      - name: WAIT FOR CONTAINERS
         run: |
-          # We need to wait until mysql and redis are available.
-          # Both containers forward their default ports to the host system, so that we can check 127.0.0.1
-          docker ps
-          docker logs dofroscra_ci-mysql-1
-          # TODO: try smarter healthcheck directly via docker compose: https://stackoverflow.com/questions/42567475/docker-compose-check-if-mysql-connection-is-ready
-          WAIT_TIMEOUT=30 WAIT_HOSTS=127.0.0.1:3306,127.0.0.1:6379 ./wait
-          ##- run: sleep 10
-          docker logs dofroscra_ci-mysql-1
-          make test || echo "FAILED=true" >> $GITHUB_ENV
+          # We need to wait until mysql is available.
+          bash .docker/scripts/wait-for-service.sh mysql 30 1 
+          
+      - name: TEST
+        run: |
+          make test || echo "FAILED=test $FAILED" >> $GITHUB_ENV
                
-      - name: evaluate results
-          if [ "$FAILED" == "true" ]; then exit 1; fi
+      - name: RUNTIMES
+        run: |
+          echo `expr $(date +%s) - $START_TOTAL`
+               
+      - name: EVALUATE
+        run: |
+          # Check if $FAILED is NOT empty
+          if [ ! -z "$FAILED" ]; then echo "Failed at $FAILED" && exit 1; fi
       
       - name: upload build artifacts
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
           path: ./.build
