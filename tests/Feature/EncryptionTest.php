@@ -12,7 +12,7 @@ class EncryptionTest extends TestCase
 
         $this->assertFileExists($pathToSecretFile);
         
-        $expected = "my_secret_password\n";
+        $expected = "my_secret_passwor\n";
         $actual   = file_get_contents($pathToSecretFile);
 
         $this->assertEquals($expected, $actual);
