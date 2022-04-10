@@ -31,8 +31,8 @@ git checkout part_2_setting-up-phpstorm-with-xdebug-for-local-development-on-doc
 
 Please subscribe to my [RSS Feed](https://www.pascallandau.com/feed.xml) and/or
 [subscribe via email](https://www.pascallandau.com/blog/#newsletter)
-to be automatically notified when a new part gets published. I'll also probably brag on
-[Twitter](https://twitter.com/PascalLandau) about it ;)
+to be automatically notified when a new part gets published. I'll also probably brag about it on
+[Twitter](https://twitter.com/PascalLandau) ;)
 
 ### Playlist
 
@@ -47,14 +47,17 @@ available containing all videos of the tutorial series.
 - [Structuring the Docker setup for PHP Projects](#structuring-the-docker-setup-for-php-projects)
 - [PhpStorm, Docker and Xdebug 3 on PHP 8.1 in 2022](#phpstorm-docker-and-xdebug-3-on-php-81-in-2022)
 - [Run Laravel 9 on Docker in 2022](#run-laravel-9-on-docker-in-2022)
+- [Set up PHP QA tools and control them via make](#set-up-php-qa-tools-and-control-them-via-make)
+- [Use git-secret to encrypt secrets in the repository](#use-git-secret-to-encrypt-secrets-in-the-repository)
+- [Create a CI pipeline for dockerized PHP Apps](#create-a-ci-pipeline-for-dockerized-php-apps)
 
 ### Planned (already used by us but not put into writing):
 
-- [CI Pipelines for dockerized PHP Apps with Github & Gitlab](#ci-pipelines-for-dockerized-php-apps-with-github-gitlab)
+- [Deploy dockerized PHP Apps on GCP managed by Terraform](#deploy-dockerized-php-apps-on-gcp-managed-by-terraform)
 
 ### Roadmap (wow much want, such little time):
 
-- [Scaling Dockerized PHP Applications with Terraform and Kubernetes on GCP/AWS](#scaling-dockerized-php-applications-with-terraform-and-kubernetes-on-gcpaws)
+- [Scaling Dockerized PHP Applications with Kubernetes on GCP](#scaling-dockerized-php-applications-with-kubernetes-on-gcp)
 
 ### Setting up PHP, PHP-FPM and NGINX for local development on Docker
 
@@ -120,14 +123,32 @@ challenges (from the browser, from the CLI, from a long running worker process).
 A step-by-step walkthrough to set up a new Laravel 9 project on the docker setup of this 
 tutorial, using a couple of common Laravel components (Commands, Controllers, Queues, Databases).
 
-### CI Pipelines for dockerized PHP Apps with Github & Gitlab
+### Set up PHP QA tools and control them via make
 
-- Status: in progress
-- Link:
+- Status: published ✓
+- Link: https://www.pascallandau.com/blog/php-qa-tools-make-docker/
 - Branch:
+  [Part 5](https://github.com/paslandau/docker-php-tutorial/tree/part-5-php-qa-tools-make-docker)
 
-Setting up common code quality tools (style checkers, static analyzers, etc.) and running them 
-as part of a CI pipeline via Github Actions and Gitlab Pipelines.
+### Use `git secret` to encrypt secrets in the repository
+
+- Status: published ✓
+- Link: https://www.pascallandau.com/blog/git-secret-encrypt-repository-docker/
+- Branch:
+  [Part 6](https://github.com/paslandau/docker-php-tutorial/tree/part-6-git-secret-encrypt-repository-docker)
+
+### Create a CI pipeline for dockerized PHP Apps
+
+- Status: published ✓
+- Link: https://www.pascallandau.com/blog/git-secret-encrypt-repository-docker/
+- Branch:
+  [Part 7](https://github.com/paslandau/docker-php-tutorial/tree/part-7-ci-pipeline-docker-php-gitlab-github)
+
+### Deploy dockerized PHP Apps on GCP managed by Terraform
+
+- Status: draft
+- Link:
+- Branch: 
 
 ### Scaling Dockerized PHP Applications with Terraform and Kubernetes on GCP/AWS
 
