@@ -51,7 +51,13 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "show-help": [
+            "make"
         ]
+    },
+    "scripts-descriptions": {
+        "show-help": "Display available 'make' commands (we use make instead of composer scripts)."
     },
     "extra": {
         "laravel": {
