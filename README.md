@@ -15,7 +15,7 @@ Two words of caution:
 
 Each tutorial is placed in a separate branch and has an accompanying article
 in [my blog](https://www.pascallandau.com/blog/)
-I recommend to clone the full repository and check out the corresponding branch for easy reference.
+I recommend cloning the full repository and check out the corresponding branch for easy reference.
 Example:
 
 ````
@@ -37,7 +37,7 @@ to be automatically notified when a new part gets published. I'll also probably 
 ### Playlist
 
 There a 
-[Youtube playlist](https://www.youtube.com/watch?v=YYI5mTjFDuA&list=PLScVLZNShARRTO-ebug0yzbiXDxtw0rtg) 
+[YouTube playlist](https://www.youtube.com/watch?v=YYI5mTjFDuA&list=PLScVLZNShARRTO-ebug0yzbiXDxtw0rtg) 
 available containing all videos of the tutorial series.
 
 ### Published
@@ -53,7 +53,7 @@ available containing all videos of the tutorial series.
 
 ### Planned (already used by us but not put into writing):
 
-- [Deploy dockerized PHP Apps on GCP managed by Terraform](#deploy-dockerized-php-apps-on-gcp-managed-by-terraform)
+- [Deploy dockerized PHP Apps on a GCP VM](#deploy-dockerized-php-apps-on-a-gcp-vm)
 
 ### Roadmap (wow much want, such little time):
 
@@ -144,7 +144,7 @@ tutorial, using a couple of common Laravel components (Commands, Controllers, Qu
 - Branch:
   [Part 7](https://github.com/paslandau/docker-php-tutorial/tree/part-7-ci-pipeline-docker-php-gitlab-github)
 
-### Deploy dockerized PHP Apps on GCP managed by Terraform
+### Deploy dockerized PHP Apps on a GCP VM
 
 - Status: draft
 - Link:
