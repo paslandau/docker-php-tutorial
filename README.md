@@ -140,7 +140,7 @@ tutorial, using a couple of common Laravel components (Commands, Controllers, Qu
 ### Create a CI pipeline for dockerized PHP Apps
 
 - Status: published ✓
-- Link: https://www.pascallandau.com/blog/git-secret-encrypt-repository-docker/
+- Link: https://www.pascallandau.com/blog/ci-pipeline-docker-php-gitlab-github/
 - Branch:
   [Part 7](https://github.com/paslandau/docker-php-tutorial/tree/part-7-ci-pipeline-docker-php-gitlab-github)
 
