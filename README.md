@@ -1,3 +1,13 @@
+<div align=center>
+
+
+![Docker PHP Tutorial](https://www.pascallandau.com/img/docker-php-tutorial.png)
+
+
+</div>
+
+---
+
 # Docker PHP Tutorial - Learning Docker for PHP Developers
 
 In this tutorial I'll take you on "my" journey of learning Docker as a PHP developer. Since I
@@ -10,6 +20,9 @@ Two words of caution:
   through
 - my main OS is Windows. Although most of the things should be easily transferable into OSX/Linux
   you might run into some quirks that I didn't encounter.
+
+You can also find an overview of the published articles at the
+[Docker PHP Tutorial](https://www.pascallandau.com/docker-php-tutorial/) site of my homepage.
 
 ## Setup
 
@@ -45,6 +58,7 @@ available containing all videos of the tutorial series.
 - [Setting up PHP, PHP-FPM and NGINX for local development on Docker](#setting-up-php-php-fpm-and-nginx-for-local-development-on-docker)
 - [Setting up PhpStorm with Xdebug for local development on Docker](#setting-up-phpstorm-with-xdebug-for-local-development-on-docker)
 - [Structuring the Docker setup for PHP Projects](#structuring-the-docker-setup-for-php-projects)
+- [Docker from scratch for PHP 8.1 Applications in 2022](#docker-from-scratch-for-php-81-applications-in-2022)
 - [PhpStorm, Docker and Xdebug 3 on PHP 8.1 in 2022](#phpstorm-docker-and-xdebug-3-on-php-81-in-2022)
 - [Run Laravel 9 on Docker in 2022](#run-laravel-9-on-docker-in-2022)
 - [Set up PHP QA tools and control them via make](#set-up-php-qa-tools-and-control-them-via-make)
@@ -109,7 +123,7 @@ An update of the previous article (Part 3) with the learnings of the past 3 year
 - Branch:
   [Part 4.2](https://github.com/paslandau/docker-php-tutorial/tree/part-4-2-phpstorm-docker-xdebug-3-php-8-1-in-2022)
 
-An update of the pervious article on setting up PhpStorm (Part 2) using the latest PHP version 
+An update of the previous article on setting up PhpStorm (Part 2) using the latest PHP version 
 (PHP 8.1) as well as the latest Xdebug version (3). The article also covers additional debugging 
 challenges (from the browser, from the CLI, from a long running worker process).
 
@@ -120,7 +134,7 @@ challenges (from the browser, from the CLI, from a long running worker process).
 - Branch:
   [Part 4.3](https://github.com/paslandau/docker-php-tutorial/tree/part-4-3-run-laravel-9-docker-in-2022)
 
-A step-by-step walkthrough to set up a new Laravel 9 project on the docker setup of this 
+A step-by-step walk through to set up a new Laravel 9 project on the docker setup of this 
 tutorial, using a couple of common Laravel components (Commands, Controllers, Queues, Databases).
 
 ### Set up PHP QA tools and control them via make
@@ -130,6 +144,9 @@ tutorial, using a couple of common Laravel components (Commands, Controllers, Qu
 - Branch:
   [Part 5](https://github.com/paslandau/docker-php-tutorial/tree/part-5-php-qa-tools-make-docker)
 
+Set up some PHP QA tools like `phpcs`, `phpstan`, etc. in the dockerized PHP application and 
+provide `make` targets to run them either in parallel or individually.
+
 ### Use `git secret` to encrypt secrets in the repository
 
 - Status: published ✓
@@ -137,12 +154,19 @@ tutorial, using a couple of common Laravel components (Commands, Controllers, Qu
 - Branch:
   [Part 6](https://github.com/paslandau/docker-php-tutorial/tree/part-6-git-secret-encrypt-repository-docker)
 
+Set up `git secret` to encrypt and store secrets directly in a git repository. All required 
+tools are set up in Docker and their usage is defined via `make` targets.
+
 ### Create a CI pipeline for dockerized PHP Apps
 
 - Status: published ✓
 - Link: https://www.pascallandau.com/blog/ci-pipeline-docker-php-gitlab-github/
 - Branch:
   [Part 7](https://github.com/paslandau/docker-php-tutorial/tree/part-7-ci-pipeline-docker-php-gitlab-github)
+
+Create a CI pipeline using the dockerized setup introduced in the previous tutorial that can be 
+executed on any CI provider. Concrete examples for Gitlab Pipelines and Github actions are included.
+
 
 ### Deploy dockerized PHP Apps on a GCP VM
 
