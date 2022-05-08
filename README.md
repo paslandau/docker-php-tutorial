@@ -16,7 +16,7 @@ some light onto some more advanced issues like cross-OS-setups and seamless IDE 
 
 Two words of caution:
 
-- I tend to write rather lengthy, in-dept articles so you should allocate some time to work it all
+- I tend to write rather lengthy, in-depth articles, so you should allocate some time to work it all
   through
 - my main OS is Windows. Although most of the things should be easily transferable into OSX/Linux
   you might run into some quirks that I didn't encounter.
