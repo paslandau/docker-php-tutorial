@@ -74,6 +74,22 @@ COPY ./images/php/base/.bashrc /root/.bashrc
 
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
+# Fix git permission issue:
+# `git` introduced a security feature to throw an error if the parent directory 
+# of the `.git` directory is owned by another user.
+# @see https://github.blog/2022-04-12-git-security-vulnerability-announced/
+# @see https://github.com/actions/checkout/issues/760
+# 
+# Since we might not have full control over the owner 
+# ( see e.g. https://github.com/docker/for-win/issues/12742 )
+# we will add the $APP_CODE_PATH as a "safe" directory to the global git config via
+#  git config --system --add safe.directory "/path/to/git/parent/folder"
+# @see https://git-scm.com/docs/git-config/2.36.0#Documentation/git-config.txt-safedirectory
+# 
+# Without this fix, git-secret will emit the error
+#  git-secret: abort: not in dir with git repo. Use 'git init' or 'git clone', then in repo use 'git secret init'
+RUN git config --system --add safe.directory "$APP_CODE_PATH"
+
 WORKDIR $APP_CODE_PATH
 
 FROM base as local
