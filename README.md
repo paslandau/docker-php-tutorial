@@ -1,4 +1,4 @@
-# CI Pipelines for dockerized PHP Apps with Github & Gitlab
-See [CI Pipelines for dockerized PHP Apps with Github & Gitlab](/blog/ci-pipeline-docker-php-gitlab-github/)
+# A primer on GCP Compute Instance VMs for dockerized Apps
+See [A primer on GCP Compute Instance VMs for dockerized Apps](/blog/gcp-compute-instance-vm-docker/)
 
 See [the full list of tutorials in the master branch](https://github.com/paslandau/docker-php-tutorial#tutorials).
