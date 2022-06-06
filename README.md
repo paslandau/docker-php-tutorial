@@ -64,6 +64,8 @@ available containing all videos of the tutorial series.
 - [Set up PHP QA tools and control them via make](#set-up-php-qa-tools-and-control-them-via-make)
 - [Use git-secret to encrypt secrets in the repository](#use-git-secret-to-encrypt-secrets-in-the-repository)
 - [Create a CI pipeline for dockerized PHP Apps](#create-a-ci-pipeline-for-dockerized-php-apps)
+- [A primer on GCP Compute Instance VMs for dockerized Apps](#a-primer-on-gcp-compute-instance-vms-for-dockerized-apps)
+- [Deploy dockerized PHP Apps to production on GCP via docker compose](#deploy-dockerized-php-apps-to-production-on-gcp-via-docker-compose)
 
 ### Planned (already used by us but not put into writing):
 
@@ -125,7 +127,7 @@ An update of the previous article (Part 3) with the learnings of the past 3 year
 
 An update of the previous article on setting up PhpStorm (Part 2) using the latest PHP version 
 (PHP 8.1) as well as the latest Xdebug version (3). The article also covers additional debugging 
-challenges (from the browser, from the CLI, from a long running worker process).
+challenges (from the browser, from the CLI, from a long-running worker process).
 
 ### Run Laravel 9 on Docker in 2022
 
@@ -167,8 +169,28 @@ tools are set up in Docker and their usage is defined via `make` targets.
 Create a CI pipeline using the dockerized setup introduced in the previous tutorial that can be 
 executed on any CI provider. Concrete examples for Gitlab Pipelines and Github actions are included.
 
+### A primer on GCP Compute Instance VMs for dockerized Apps
 
-### Deploy dockerized PHP Apps on a GCP VM
+- Status: published ✓
+- Link: https://www.pascallandau.com/blog/gcp-compute-instance-vm-docker/
+- Branch:
+  [Part 8](https://github.com/paslandau/docker-php-tutorial/tree/part-8-gcp-compute-instance-vm-docker)
+
+Getting started with the Google Cloud Platform (GCP) as infrastructure provider for a container
+registry to push and pull docker images as well as for virtual machines to run dockerized
+applications.
+
+### Deploy dockerized PHP Apps to production on GCP via docker compose
+
+- Status: published ✓
+- Link: https://www.pascallandau.com/blog/gcp-compute-instance-vm-docker/
+- Branch:
+  [Part 9](https://github.com/paslandau/docker-php-tutorial/tree/part-9-deploy-docker-compose-php-gcp-poc)
+
+Introduce a `prod` environment to build docker images that are then deployed "to production" on a
+GCP VM to be executed via `docker compose` as a proof-of-concept.
+
+### Run dockerized PHP Apps on multiple GCP VMs in production
 
 - Status: draft
 - Link:
