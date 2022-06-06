@@ -1,0 +1,5 @@
+services:
+  show-build-context:
+    build:
+      context: ../../../
+      dockerfile: .dev/scripts/docker-compose-build-context/Dockerfile

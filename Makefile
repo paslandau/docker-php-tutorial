@@ -40,9 +40,18 @@ MAKEFLAGS += --no-builtin-rules
 include .make/variables.env
 # include the local variables
 -include .make/.env
+# set default values for ENV and TAG to suppress "warning: undefined variable" when .make/.env does not exist yet
+ENV?=
+TAG?=
 
 # Common variable to pass arbitrary options to targets
 ARGS?= 
+
+# bash colors
+RED:=\033[0;31m
+GREEN:=\033[0;32m
+YELLOW:=\033[0;33m
+NO_COLOR:=\033[0m
 
 # @see https://www.thapaliya.com/en/writings/well-documented-makefiles/
 .DEFAULT_GOAL:=help
@@ -53,6 +62,13 @@ include .make/*.mk
 # We are NOT using $(MAKEFILE_LIST) but defined the required make files manually via "Makefile .make/*.mk"
 # because $(MAKEFILE_LIST) also contains the .env files AND we cannot force the order of the files
 help:
+	@printf '%-43s \033[1mDefault values: \033[0m     \n'
+	@printf '%-43s ===================================\n'
+	@printf '%-43s ENV: \033[31m "$(ENV)" \033[0m     \n'
+	@printf '%-43s TAG: \033[31m "$(TAG)" \033[0m     \n'
+	@printf '%-43s ===================================\n'
+	@printf '%-43s \033[3mRun the following command to set them:\033[0m\n'
+	@printf '%-43s \033[1mmake make-init ENVS="ENV=prod TAG=latest"\033[0m\n'
 	@awk 'BEGIN {FS = ":.*##"; printf "\n\033[1mUsage:\033[0m\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-40s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' Makefile .make/*.mk
 
 ##@ [Make]

@@ -22,4 +22,6 @@ USER $APP_USER_NAME
 
 CMD ["supervisord"]
 
+FROM base as prod
+
 FROM base as local

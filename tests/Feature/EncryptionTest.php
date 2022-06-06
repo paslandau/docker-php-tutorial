@@ -8,7 +8,7 @@ class EncryptionTest extends TestCase
 {
     public function test_ensure_that_the_secret_passwords_file_was_decrypted(): void
     {
-        $pathToSecretFile = __DIR__."/../../passwords.txt";
+        $pathToSecretFile = __DIR__."/../../.secrets/shared/passwords.txt";
 
         $this->assertFileExists($pathToSecretFile);
         

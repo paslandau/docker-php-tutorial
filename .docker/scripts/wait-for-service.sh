@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script waits for a docker `$service` to become "healthy"
 # by checking the `.State.Health.Status` info of the `docker inspect` command.
@@ -11,7 +11,7 @@ name=$1
 max=$2
 interval=$3
 
-[ -z "$1" ] && echo "Usage example: bash wait-for-service.sh mysql 5 1"
+[ -z "$1" ] && echo "Usage example: bash wait-for-service.sh mysql 5 1" && exit;
 [ -z "$2" ] && max=30
 [ -z "$3" ] && interval=1
 

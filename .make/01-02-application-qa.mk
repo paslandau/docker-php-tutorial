@@ -9,12 +9,6 @@ ALL_FILES=./
 APP_FILES=app/
 TEST_FILES=tests/
 
-## bash colors
-RED:=\033[0;31m
-GREEN:=\033[0;32m
-YELLOW:=\033[0;33m
-NO_COLOR:=\033[0m
-
 # Tool CLI config
 PHPUNIT_CMD=php vendor/bin/phpunit
 PHPUNIT_ARGS= -c phpunit.xml --log-junit .build/report.xml

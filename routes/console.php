@@ -17,3 +17,8 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('info', function () {
+    $info = file_get_contents(__DIR__."/../build-info");
+    $this->line($info);
+})->purpose('Display build information about the codebase');

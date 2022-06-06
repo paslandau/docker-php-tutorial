@@ -28,7 +28,7 @@ services:
     # long-running process defined as entrypoint for the container
     # @see https://stackoverflow.com/a/55953120
     tty: true
-    
+
   mysql:
     image: mysql:${MYSQL_VERSION?}
     platform: linux/amd64

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-usage="Usage: deploy.sh project_id vm_name"
+usage="Usage: setup-gcp.sh project_id vm_name"
 [ -z "$1" ] &&  echo "No project_id given! $usage" && exit 1
 [ -z "$2" ] &&  echo "No vm_name given! $usage" && exit 1
 
@@ -14,7 +14,7 @@ master_service_account_key_location=./gcp-master-service-account-key.json
 deployment_service_account_id=deployment
 deployment_service_account_key_location=./gcp-service-account-key.json
 deployment_service_account_mail="${deployment_service_account_id}@${project_id}.iam.gserviceaccount.com"
-gpg_secret_key_location=secret-production-protected.gpg.example
+gpg_secret_key_location=.tutorial/secret-production-protected.gpg.example
 gpg_secret_key_password=87654321
 
 printf "${GREEN}Setting up GCP project for${NO_COLOR}\n"
@@ -64,7 +64,7 @@ printf "${GREEN}Creating a Compute Instance VM${NO_COLOR}\n"
 gcloud compute instances create "${vm_name}" \
     --project="${project_id}" \
     --zone="${vm_zone}" \
-    --machine-type=e2-micro \
+    --machine-type=e2-small \
     --network-interface=network-tier=PREMIUM,subnet=default \
     --no-restart-on-failure \
     --maintenance-policy=TERMINATE \
@@ -83,8 +83,8 @@ printf "${GREEN}Activating deployment service account${NO_COLOR}\n"
 gcloud auth activate-service-account --key-file="${deployment_service_account_key_location}" --project="${project_id}"
 
 printf "${GREEN}Transferring provisioning script${NO_COLOR}\n"
-echo "Waiting for the instance to be fully ready to receive IAP connections"
-sleep 15
+echo "Waiting 60s for the instance to be fully ready to receive IAP connections"
+sleep 60
 gcloud compute scp --zone ${vm_zone} --tunnel-through-iap --project=${project_id} ./.infrastructure/scripts/provision.sh ${vm_name}:provision.sh
 
 printf "${GREEN}Executing provisioning script${NO_COLOR}\n"

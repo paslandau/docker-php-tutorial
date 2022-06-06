@@ -1,15 +1,60 @@
-# gitignore
+# ---
+# Rules from .gitignore
+# ---
+**/*.env*
 !.env.example
-.env
+!.make/variables.env
 .idea
 .phpunit.result.cache
 vendor/
 secret.gpg
 .gitsecret/keys/random_seed
 .gitsecret/keys/pubring.kbx~
-!*.secret
-passwords.txt
-.build
+.secrets/*/*
+!**/*.secret
+.build/*
+!.gitkeep
+gcp-service-account-key.json
+gcp-master-service-account-key.json
 
-# additionally ignored files
+# => directory-specific .gitignore files by Laravel
+bootstrap/cache/*
+database/*.sqlite*
+storage/app/*
+!storage/app/public/
+storage/app/public/*
+storage/framework/*
+!storage/framework/cache/
+storage/framework/cache/*
+!storage/framework/cache/data/
+storage/framework/cache/data/*
+!storage/framework/sessions/
+storage/framework/sessions/*
+!storage/framework/testing/
+storage/framework/testing/*
+!storage/framework/views/
+storage/framework/views/*
+!storage/framework/logs/
+storage/framework/logs/*
+
+# => directory-specific .gitignore files from us
+.build/*
+
+# => keep ALL .gitignore files
+!**.gitignore
+
+# ---
+# Rules specifically for .dockerignore
+# ---
+
+# => don't transfer the git directory
 .git
+
+# => keep the build-info file
+!.build/build-info
+
+# [WORKAROUND]
+# temporary fix for https://github.com/docker/compose/issues/9508
+# Otherwise, `docker compose build` would transfer the `.gitignore` files 
+# in the vendor/ directory to the build context
+vendor/**

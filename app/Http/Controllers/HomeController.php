@@ -63,6 +63,7 @@ class HomeController extends Controller
                 <li><a href="?dispatch=foo">Dispatch job 'foo' to the queue.</a></li>
                 <li><a href="?queue">Show the queue.</a></li>
                 <li><a href="?db">Show the DB.</a></li>
+                <li><a href="/info">Show the build info.</a></li>
             </ul>
             HTML;
 

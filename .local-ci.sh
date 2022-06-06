@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # fail on any error 
 # @see https://stackoverflow.com/a/3474556/413531
 set -e
@@ -48,7 +48,7 @@ end_total=$(date +%s)
 
 # RUNTIMES
 echo "Build docker:        " `expr $end_docker_build - $start_docker_build`
-echo "Start docker:        " `expr $end_docker_up - $start_docker_up  `
+echo "Start docker:        " `expr $end_docker_up - $start_docker_up`
 echo "QA:                  " `expr $end_qa - $start_qa`
 echo "Wait for containers: " `expr $end_wait_for_containers - $start_wait_for_containers`
 echo "Tests:               " `expr $end_test - $start_test`

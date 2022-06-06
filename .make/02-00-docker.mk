@@ -26,17 +26,21 @@ DOCKER_SERVICE_NAME_APPLICATION:=application
 DOCKER_DIR:=./.docker
 DOCKER_ENV_FILE:=$(DOCKER_DIR)/.env
 DOCKER_COMPOSE_DIR:=$(DOCKER_DIR)/docker-compose
-DOCKER_COMPOSE_FILE_LOCAL_CI:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.ci.yml
-DOCKER_COMPOSE_FILE_CI:=$(DOCKER_COMPOSE_DIR)/docker-compose.ci.yml
+DOCKER_COMPOSE_FILE_LOCAL_CI_PROD:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.ci.prod.yml
+DOCKER_COMPOSE_FILE_LOCAL_PROD:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.prod.yml
 DOCKER_COMPOSE_FILE_LOCAL:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.yml
+DOCKER_COMPOSE_FILE_CI:=$(DOCKER_COMPOSE_DIR)/docker-compose.ci.yml
+DOCKER_COMPOSE_FILE_PROD:=$(DOCKER_COMPOSE_DIR)/docker-compose.prod.yml
 DOCKER_COMPOSE_FILE_PHP_BASE:=$(DOCKER_COMPOSE_DIR)/docker-compose-php-base.yml
 DOCKER_COMPOSE_PROJECT_NAME:=dofroscra_$(ENV)
 
 # we need to "assemble" the correct combination of docker-compose.yml config files
-ifeq ($(ENV),ci)
-	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI) -f $(DOCKER_COMPOSE_FILE_CI)
+ifeq ($(ENV),prod)
+	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL_PROD) -f $(DOCKER_COMPOSE_FILE_PROD)
+else ifeq ($(ENV),ci)
+	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_CI)
 else ifeq ($(ENV),local)
-	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI) -f $(DOCKER_COMPOSE_FILE_LOCAL)
+	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL)
 endif
 
 # we need a couple of environment variables for docker-compose so we define a make-variable that we can
@@ -87,7 +91,7 @@ docker-clean: ## Remove the .env file for docker
 	@rm -f $(DOCKER_ENV_FILE)
 
 .PHONY: validate-docker-variables
-validate-docker-variables: .docker/.env
+validate-docker-variables: .docker/.env compose-secrets.env
 	@$(if $(TAG),,$(error TAG is undefined))
 	@$(if $(ENV),,$(error ENV is undefined))
 	@$(if $(DOCKER_REGISTRY),,$(error DOCKER_REGISTRY is undefined - Did you run make-init?))
@@ -98,13 +102,21 @@ validate-docker-variables: .docker/.env
 .docker/.env:
 	@cp $(DOCKER_ENV_FILE).example $(DOCKER_ENV_FILE)
 
+compose-secrets.env:
+	@echo "# This file only exists because docker compose cannot run 'build' otherwise," > ./compose-secrets.env
+	@echo "# as it is referenced as an 'env_file' in the docker compose config file" >> ./compose-secrets.env
+	@echo "# for the 'prod' environment. On 'prod' it will contain the necessary ENV variables," >> ./compose-secrets.env
+	@echo "# but on all other environments this 'placeholder' file is created." >> ./compose-secrets.env
+	@echo "# The file is generated automatically via 'make' if a docker compose target is executed" >> ./compose-secrets.env
+	@echo "# @see https://github.com/docker/compose/issues/1973#issuecomment-1148257736" >> ./compose-secrets.env
+
 .PHONY:docker-build-image
 docker-build-image: validate-docker-variables ## Build all docker images OR a specific image by providing the service name via: make docker-build DOCKER_SERVICE_NAME=<service>
-	$(DOCKER_COMPOSE) build $(DOCKER_SERVICE_NAME)
+	$(DOCKER_COMPOSE) build $(DOCKER_SERVICE_NAME) $(ARGS)
 
 .PHONY: docker-build-php
 docker-build-php: validate-docker-variables ## Build the php base image
-	$(DOCKER_COMPOSE_PHP_BASE) build $(DOCKER_SERVICE_NAME_PHP_BASE)
+	$(DOCKER_COMPOSE_PHP_BASE) build $(DOCKER_SERVICE_NAME_PHP_BASE) $(ARGS)
 
 .PHONY: docker-build
 docker-build: docker-build-php docker-build-image ## Build the php image and then all other docker images
@@ -121,6 +133,38 @@ docker-down: validate-docker-variables ## Stop and remove all docker containers.
 docker-config: validate-docker-variables ## List the configuration
 	@$(DOCKER_COMPOSE) config
 
+.PHONY: docker-push
+docker-push: validate-docker-variables ## Push all docker images to the remote repository
+	$(DOCKER_COMPOSE) push $(ARGS)
+
+.PHONY: docker-pull
+docker-pull: validate-docker-variables ## Pull all docker images from the remote repository
+	$(DOCKER_COMPOSE) pull $(ARGS)
+
+.PHONY: docker-exec
+docker-exec: validate-docker-variables ## Execute a command in a docker container. Usage: `make docker-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
+	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
+	@$(if $(DOCKER_COMMAND),,$(error "DOCKER_COMMAND is undefined"))
+	$(DOCKER_COMPOSE) exec -T $(DOCKER_SERVICE_NAME) $(DOCKER_COMMAND)
+
 .PHONY: docker-prune
 docker-prune: ## Remove ALL unused docker resources, including volumes
 	@docker system prune -a -f --volumes
+
+# @see https://www.linuxfixes.com/2022/01/solved-how-to-test-dockerignore-file.html
+# helpful to debug a .dockerignore file
+.PHONY: docker-show-build-context
+docker-show-build-context: ## Show all files that are in the docker build context for `docker build`
+	@echo -e "FROM busybox\nCOPY . /codebase\nCMD find /codebase -print" | docker image build --no-cache -t build-context -f - .
+	@docker run --rm build-context | sort
+
+# `docker build` and `docker compose build` are behaving differently
+# @see https://github.com/docker/compose/issues/9508
+.PHONY: docker-show-compose-build-context
+docker-show-compose-build-context: ## Show all files that are in the docker build context for `docker compose build`
+	@.dev/scripts/docker-compose-build-context/show-build-context.sh
+
+# Note: This is only a temporary target until https://github.com/docker/for-win/issues/12742 is fixed
+.PHONY: docker-fix-mount-permissions
+docker-fix-mount-permissions: ## Fix the permissions of the bind-mounted folder, @see https://github.com/docker/for-win/issues/12742
+	$(EXECUTE_IN_APPLICATION_CONTAINER) ls -al

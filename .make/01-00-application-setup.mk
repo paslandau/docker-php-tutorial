@@ -13,6 +13,8 @@ setup-db: ## Setup the DB tables
 composer: ## Run composer commands. Specify the command e.g. via ARGS="install"
 	$(EXECUTE_IN_APPLICATION_CONTAINER) composer $(ARGS)
 
+##@ [Application: GPG]
+
 # gpg
 
 DEFAULT_SECRET_GPG_KEY?=secret.gpg
@@ -50,7 +52,11 @@ gpg-import-default-public-keys: ## Import the default public keys
 .PHONY: gpg-init
 gpg-init: gpg-import-default-secret-key gpg-import-default-public-keys ## Initialize gpg in the container, i.e. import all public and private keys
 
+##@ [Application: git secret]
+
 # git-secret
+
+FILES?=
 
 .PHONY: git-secret
 git-secret: ## Run git-secret commands. Specify the command e.g. via ARGS="hide"
@@ -74,32 +80,32 @@ secret-encrypt: ## Decrypt secret files via `git-secret hide`
 	"$(MAKE)" -s git-secret ARGS="hide"
 
 .PHONY: secret-decrypt
-secret-decrypt: ## Decrypt secret files via `git-secret reveal -f`
-	"$(MAKE)" -s git-secret ARGS="reveal -f" 
+secret-decrypt: ## Decrypt secret files via `git-secret reveal -f`. Use FILES=file1 to decrypt only file1 instead of all files
+	"$(MAKE)" -s git-secret ARGS="reveal -f $(FILES)"
 
 .PHONY: secret-decrypt-with-password
-secret-decrypt-with-password: ## Decrypt secret files using a password for gpg via `git-secret reveal -f -p $(GPG_PASSWORD)`
+secret-decrypt-with-password: ## Decrypt secret files using a password for gpg. Use FILES=file1 to decrypt only file1 instead of all files
 	@$(if $(GPG_PASSWORD),,$(error GPG_PASSWORD is undefined))
-	"$(MAKE)" -s git-secret ARGS="reveal -f -p $(GPG_PASSWORD)" 
+	"$(MAKE)" -s git-secret ARGS="reveal -f -p $(GPG_PASSWORD) $(FILES)" 
 
 .PHONY: secret-add
-secret-add: ## Add a file to git secret via `git-secret add $FILE`
-	@$(if $(FILE),,$(error FILE is undefined))
-	"$(MAKE)" -s git-secret ARGS="add $(FILE)"
+secret-add: ## Add a file to git secret via `git-secret add $FILES`
+	@$(if $(FILES),,$(error FILES is undefined))
+	"$(MAKE)" -s git-secret ARGS="add $(FILES)"
 
 .PHONY: secret-cat
-secret-cat: ## Show the contents of file to git secret via `git-secret cat $FILE`
-	@$(if $(FILE),,$(error FILE is undefined))
-	"$(MAKE)" -s git-secret ARGS="cat $(FILE)"
+secret-cat: ## Show the contents of file to git secret via `git-secret cat $FILES`
+	@$(if $(FILES),,$(error FILES is undefined))
+	"$(MAKE)" -s git-secret ARGS="cat $(FILES)"
 
 .PHONY: secret-list
 secret-list: ## List all files added to git secret `git-secret list`
 	"$(MAKE)" -s git-secret ARGS="list"
 
 .PHONY: secret-remove
-secret-remove: ## Remove a file from git secret via `git-secret remove $FILE`
-	@$(if $(FILE),,$(error FILE is undefined))
-	"$(MAKE)" -s git-secret ARGS="remove $(FILE)"
+secret-remove: ## Remove a file from git secret via `git-secret remove $FILES`
+	@$(if $(FILES),,$(error FILES is undefined))
+	"$(MAKE)" -s git-secret ARGS="remove $(FILES)"
 
 .PHONY: secret-add-user
 secret-add-user: ## Remove a user from git secret via `git-secret tell $EMAIL`
@@ -117,4 +123,4 @@ secret-remove-user: ## Remove a user from git secret via `git-secret killperson 
 
 .PHONY: secret-diff
 secret-diff: ## Show the diff between the content of encrypted and decrypted files via `git-secret changes`
-	"$(MAKE)" -s git-secret ARGS="changes"
+	"$(MAKE)" -s git-secret ARGS="changes $(FILES)"

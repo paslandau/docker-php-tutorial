@@ -39,7 +39,10 @@ ADD https://gitsecret.jfrog.io/artifactory/api/security/keypair/public/repositor
 RUN echo "https://gitsecret.jfrog.io/artifactory/git-secret-apk/all/main" >> /etc/apk/repositories  && \
     apk add --update --no-cache \
         bash \
+        git \
         git-secret \
+        # required for git-secret
+        gawk \
         gnupg \
         make \
         strace \
@@ -68,7 +71,6 @@ RUN apk add ca-certificates && \
 # make "php" as command available by creating a symlink
 # https://github.com/codecasts/php-alpine/issues/20#issuecomment-350477886    
     && ln -s /usr/bin/php8 /usr/bin/php
-
 
 # make bash default shell
 RUN sed -e 's;/bin/ash$;/bin/bash;g' -i /etc/passwd
@@ -113,17 +115,71 @@ RUN --mount=type=cache,target=/tmp/.composer \
     # COMPOSER_HOME=/tmp/.composer sets the home directory of composer that
     # also controls where composer looks for the cache 
     # so we don't have to download dependencies again (if they are cached)
-    COMPOSER_HOME=/tmp/.composer composer install --no-scripts --no-plugins --no-progress -o 
-
+    # @see https://stackoverflow.com/a/60518444 for the correct if-then-else syntax:
+    # - end all commands with ; \
+    # - except THEN and ELSE
+    if [ "$ENV" == "prod" ] ; \
+    then \
+      # on production, we don't want test dependencies
+      COMPOSER_HOME=/tmp/.composer composer install --no-scripts --no-plugins --no-progress -o --no-dev; \
+    else  \
+      COMPOSER_HOME=/tmp/.composer composer install --no-scripts --no-plugins --no-progress -o; \
+    fi
+ 
 # copy the full codebase
 COPY . /codebase
 
-RUN mv /dependencies/vendor /codebase/vendor && \
-    cd /codebase && \
-    # remove files we don't require in the image to keep the image size small
-    rm -rf .docker/ && \
-    # we need a git repository for git-secret to work (can be an empty one)
+# move the dependencies
+RUN mv /dependencies/vendor /codebase/vendor
+
+# remove files we don't require in the image to keep the image size small
+RUN cd /codebase && \
+    rm -rf .docker/ .build/ .infrastructure/ && \
+    if [ "$ENV" == "prod" ] ; \
+    then \
+      # on production, we don't want tests
+      rm -rf tests/; \
+    fi
+ 
+# Remove all secrets that are NOT required for the given ENV:
+#  `find /codebase/.secrets -type f -print` lists all files in the .secrets directory
+#  `grep -v "/\(shared\|$ENV\)/"` matches only the files that are NOT in the shared/ or $ENV/ (e.g. prod/) directories
+#  `grep -v ".secret\$"` ensures that we remove all files that are NOT ending in .secret
+#    FYI: 
+#     the "$" has to be escaped with a "\" 
+#     "Escaping is possible by adding a \ before the variable"
+#     @see https://docs.docker.com/engine/reference/builder/#environment-replacement
+#  `xargs rm -f` retrieves the remaining file and deletes them
+#    FYI: 
+#     `xargs` is necessary to convert the stdin to args for `rm`
+#     @see https://stackoverflow.com/a/20307392/413531
+#     the `-f` flag is required so that `rm` doesn't fail if no files are matched
+RUN find /codebase/.secrets -type f -print | grep -v "/\(shared\|$ENV\)/" | xargs rm -f && \
+    find /codebase/.secrets -type f -print | grep -v ".secret\$" | xargs rm -f && \
+    # list the remaining files for debugging purposes
+    find /codebase/.secrets -type f -print
+
+# We need a git repository for git-secret to work (can be an empty one)
+RUN cd /codebase && \
     git init
+
+FROM base as prod
+
+# We will use a custom ENTRYPOINT to decrypt the secrets when the container starts.
+# This way, we can store the secrets in their encrypted form directly in the image.
+# Note: Because we defined a custom ENTRYPOINT, the default CMD of the base image
+#       will be overriden. Thus, we must explicitly re-define it here via `CMD ["/bin/sh"]`.
+#       This behavior is described in the docs as:
+#       "If CMD is defined from the base image, setting ENTRYPOINT will reset CMD to an empty value. In this scenario, CMD must be defined in the current image to have a value."
+#       @see https://docs.docker.com/engine/reference/builder/#understand-how-cmd-and-entrypoint-interact
+COPY ./.docker/images/php/base/decrypt-secrets.sh /decrypt-secrets.sh
+RUN chmod +x /decrypt-secrets.sh
+CMD ["/bin/sh"]
+ENTRYPOINT ["/decrypt-secrets.sh"]
+
+COPY --from=codebase --chown=$APP_USER_NAME:$APP_GROUP_NAME /codebase $APP_CODE_PATH
+
+COPY --chown=$APP_USER_NAME:$APP_GROUP_NAME ./.build/build-info $APP_CODE_PATH/build-info
 
 FROM base as ci
 

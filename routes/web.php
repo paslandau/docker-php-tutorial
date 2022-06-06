@@ -14,3 +14,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', \App\Http\Controllers\HomeController::class)->name("home");
+
+Route::get('/info', function () {
+    $info = file_get_contents(__DIR__."/../build-info");
+    return new \Illuminate\Http\Response($info, 200, ["Content-type" => "text/plain"]);
+});

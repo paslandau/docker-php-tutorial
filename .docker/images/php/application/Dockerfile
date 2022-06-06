@@ -1,7 +1,13 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE} as base
 
+FROM base as prod
+
+USER $APP_USER_NAME
+
 FROM base as ci
+
+USER $APP_USER_NAME
 
 FROM base as local
 

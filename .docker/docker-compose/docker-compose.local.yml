@@ -2,38 +2,20 @@ version: '3.7'
 
 services:
   php-fpm:
-    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-fpm-${ENV?}:${TAG?}
-    build:
-      context: ../
-      dockerfile: ./images/php/fpm/Dockerfile
-      target: ${ENV?}
-      args:
-        - BASE_IMAGE=${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-base-${ENV?}:${TAG?}
-        - TARGET_PHP_VERSION=${PHP_VERSION?}
     environment:
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
+    volumes:
+      - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
     # cap_add and security_opt are required to enable strace
     # @see https://stackoverflow.com/a/46676868
     cap_add:
       - "SYS_PTRACE"
     security_opt:
       - "seccomp=unconfined"
-    volumes:
-      - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
-    networks:
-      - network
     extra_hosts:
       - host.docker.internal:host-gateway
       
   php-worker:
-    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-worker-${ENV?}:${TAG?}
-    build:
-      context: ../
-      dockerfile: ./images/php/worker/Dockerfile
-      target: ${ENV?}
-      args:
-        - BASE_IMAGE=${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-base-${ENV?}:${TAG?}
-        - PHP_WORKER_PROCESS_NUMBER=${PHP_WORKER_PROCESS_NUMBER:-4}
     environment:
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
     volumes:
@@ -44,31 +26,12 @@ services:
       - "SYS_PTRACE"
     security_opt:
       - "seccomp=unconfined"
-    networks:
-      - network
     extra_hosts:
       - host.docker.internal:host-gateway
   
   nginx:
-    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/nginx-${ENV?}:${TAG?}
-    build:
-      context: ../
-      dockerfile: ./images/nginx/Dockerfile
-      target: ${ENV?}
-      args:
-        - NGINX_VERSION=${NGINX_VERSION?}
-        - APP_CODE_PATH=${APP_CODE_PATH_CONTAINER?}
     volumes:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
-    ports:
-      - "${NGINX_HOST_HTTP_PORT:-80}:80"
-      - "${NGINX_HOST_HTTPS_PORT:-443}:443"
-    networks:
-      network:
-        aliases:
-          - ${APP_HOST?}
-    depends_on:
-      - php-fpm
 
   application:
     build:
@@ -90,13 +53,9 @@ services:
       - host.docker.internal:host-gateway
    
   mysql:
-    volumes:
-      - mysql:/var/lib/mysql
     ports:
       - "${MYSQL_HOST_PORT:-3306}:3306"
   
   redis:
-    volumes:
-      - redis:/data
     ports:
       - "${REDIS_HOST_PORT:-6379}:6379"
