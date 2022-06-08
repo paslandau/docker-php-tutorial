@@ -83,8 +83,8 @@ printf "${GREEN}Activating deployment service account${NO_COLOR}\n"
 gcloud auth activate-service-account --key-file="${deployment_service_account_key_location}" --project="${project_id}"
 
 printf "${GREEN}Transferring provisioning script${NO_COLOR}\n"
-echo "Waiting for the instance to be fully ready to receive IAP connections"
-sleep 15
+echo "Waiting 60s for the instance to be fully ready to receive IAP connections"
+sleep 60
 gcloud compute scp --zone ${vm_zone} --tunnel-through-iap --project=${project_id} ./.infrastructure/scripts/provision.sh ${vm_name}:provision.sh
 
 printf "${GREEN}Executing provisioning script${NO_COLOR}\n"
