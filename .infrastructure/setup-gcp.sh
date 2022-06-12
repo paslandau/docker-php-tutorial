@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-usage="Usage: deploy.sh project_id vm_name"
+usage="Usage: setup-gcp.sh project_id vm_name"
 [ -z "$1" ] &&  echo "No project_id given! $usage" && exit 1
 [ -z "$2" ] &&  echo "No vm_name given! $usage" && exit 1
 
