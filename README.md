@@ -183,7 +183,7 @@ applications.
 ### Deploy dockerized PHP Apps to production on GCP via docker compose
 
 - Status: published ✓
-- Link: https://www.pascallandau.com/blog/gcp-compute-instance-vm-docker/
+- Link: https://www.pascallandau.com/blog/deploy-docker-compose-php-gcp-poc/
 - Branch:
   [Part 9](https://github.com/paslandau/docker-php-tutorial/tree/part-9-deploy-docker-compose-php-gcp-poc)
 
