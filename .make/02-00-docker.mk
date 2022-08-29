@@ -36,6 +36,9 @@ DOCKER_COMPOSE_FILE_LOCAL:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.yml
 DOCKER_COMPOSE_FILE_PHP_BASE:=$(DOCKER_COMPOSE_DIR)/docker-compose-php-base.yml
 DOCKER_COMPOSE_PROJECT_NAME:=dofroscra_$(ENV)
 
+# try 'docker compose' if system isn't using 'docker-compose' or alias failed
+DOCKER_COMPOSE_CLI := $(if $(filter version %,$(shell docker-compose --version)), docker-compose, docker compose)
+
 # we need a couple of environment variables for docker-compose so we define a make-variable that we can
 # then reference later in the Makefile without having to repeat all the environment variables
 DOCKER_COMPOSE_COMMAND:=ENV=$(ENV) \
@@ -44,7 +47,7 @@ DOCKER_COMPOSE_COMMAND:=ENV=$(ENV) \
  DOCKER_NAMESPACE=$(DOCKER_NAMESPACE) \
  APP_USER_NAME=$(APP_USER_NAME) \
  APP_GROUP_NAME=$(APP_GROUP_NAME) \
- docker-compose -p $(DOCKER_COMPOSE_PROJECT_NAME) --env-file $(DOCKER_ENV_FILE)
+ $(DOCKER_COMPOSE_CLI) -p $(DOCKER_COMPOSE_PROJECT_NAME) --env-file $(DOCKER_ENV_FILE)
 
 DOCKER_COMPOSE:=$(DOCKER_COMPOSE_COMMAND) -f $(DOCKER_COMPOSE_FILE) -f $(DOCKER_COMPOSE_FILE_LOCAL)
 DOCKER_COMPOSE_PHP_BASE:=$(DOCKER_COMPOSE_COMMAND) -f $(DOCKER_COMPOSE_FILE_PHP_BASE)
