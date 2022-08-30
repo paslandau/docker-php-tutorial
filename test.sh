@@ -17,6 +17,7 @@ make docker-down
 make docker-up
 
 info "Clearing DB"
+sleep 0.5
 make setup-db ARGS=--drop
 
 info "Stopping workers"
