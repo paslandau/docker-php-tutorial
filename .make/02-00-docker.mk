@@ -50,8 +50,9 @@ DOCKER_COMPOSE_COMMAND:= \
  TAG=$(TAG) \
  DOCKER_REGISTRY=$(DOCKER_REGISTRY) \
  DOCKER_NAMESPACE=$(DOCKER_NAMESPACE) \
+ APP_USER_ID=$(APP_USER_ID) \
+ APP_GROUP_ID=$(APP_GROUP_ID) \
  APP_USER_NAME=$(APP_USER_NAME) \
- APP_GROUP_NAME=$(APP_GROUP_NAME) \
  docker compose -p $(DOCKER_COMPOSE_PROJECT_NAME) --env-file $(DOCKER_ENV_FILE)
 
 DOCKER_COMPOSE:=$(DOCKER_COMPOSE_COMMAND) $(DOCKER_COMPOSE_FILES)
@@ -96,8 +97,9 @@ validate-docker-variables: .docker/.env compose-secrets.env
 	@$(if $(ENV),,$(error ENV is undefined))
 	@$(if $(DOCKER_REGISTRY),,$(error DOCKER_REGISTRY is undefined - Did you run make-init?))
 	@$(if $(DOCKER_NAMESPACE),,$(error DOCKER_NAMESPACE is undefined - Did you run make-init?))
+	@$(if $(APP_USER_ID),,$(error APP_USER_ID is undefined - Did you run make-init?))
+	@$(if $(APP_GROUP_ID),,$(error APP_GROUP_ID is undefined - Did you run make-init?))
 	@$(if $(APP_USER_NAME),,$(error APP_USER_NAME is undefined - Did you run make-init?))
-	@$(if $(APP_GROUP_NAME),,$(error APP_GROUP_NAME is undefined - Did you run make-init?))
 
 .docker/.env:
 	@cp $(DOCKER_ENV_FILE).example $(DOCKER_ENV_FILE)
