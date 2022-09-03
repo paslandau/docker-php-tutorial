@@ -3,7 +3,7 @@ See [PhpStorm, Docker and Xdebug 3 on PHP 8.1 in 2022](https://www.pascallandau.
 
 Configuring PhpStorm to run PHP code on the docker setup.
 
-See [the full list of tutorials in the master branch](https://github.m/paslandau/docker-php-tutorial#tutorials).
+See [the full list of tutorials in the master branch](https://github.com/paslandau/docker-php-tutorial#tutorials).
 
 ## Follow along
 ````
