@@ -97,7 +97,7 @@ composer-require-checker: ## Run dependency checker
 
 .PHONY: qa
 qa: ## Run code quality tools on all files
-	"$(MAKE)" -j $(CORES) -k --no-print-directory --output-sync=target qa-exec NO_PROGRESS=true
+	@"$(MAKE)" -j $(CORES) -k --no-print-directory --output-sync=target qa-exec NO_PROGRESS=true
 
 .PHONY: qa-exec
 qa-exec: phpstan \

@@ -57,7 +57,7 @@ QA and Tests:
     # Run the tests and qa tools but only store the error instead of failing immediately
     # @see https://stackoverflow.com/a/59200738/413531
     - start_qa=$(date +%s)
-    - make qa ENV=ci || FAILED=true
+    - make qa || FAILED=true
     - end_qa=$(date +%s)
     
     ## WAIT FOR CONTAINERS

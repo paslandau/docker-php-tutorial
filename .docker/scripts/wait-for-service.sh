@@ -11,7 +11,7 @@ name=$1
 max=$2
 interval=$3
 
-[ -z "$1" ] && echo "Usage example: bash wait-for-service.sh mysql 5 1"
+[ -z "$1" ] && echo "Usage example: bash wait-for-service.sh mysql 5 1" && exit 1;
 [ -z "$2" ] && max=30
 [ -z "$3" ] && interval=1
 
@@ -28,6 +28,6 @@ while true; do
   if [ $i == $max ]; then 
     echo "FAIL"; 
     exit 1
-  fi 
+  fi
   sleep $interval; 
 done
