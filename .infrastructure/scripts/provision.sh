@@ -22,5 +22,4 @@ echo \
 sudo apt-get update -yq && sudo apt-get install -yq \
      docker-ce \
      docker-ce-cli \
-     containerd.io \
-     docker-compose-plugin
+     containerd.io

@@ -8,8 +8,12 @@ SHELL := bash
 # @see https://stackoverflow.com/a/70856332/413531
 DOCKER_COMPOSE_EXEC_OPTIONS=-T
 
-# OS is defined for WIN systems, so "uname" will not be executed
+# OS is a defined variable for WIN systems, so "uname" will not be executed
 OS?=$(shell uname)
+# Values of OS:
+#   Windows => Windows_NT 
+#   Mac 	=> Darwin 
+#   Linux 	=> Linux 
 ifeq ($(OS),Windows_NT)
 	# Windows requires the .exe extension, otherwise the entry is ignored
 	# @see https://stackoverflow.com/a/60318554/413531
@@ -39,7 +43,10 @@ MAKEFLAGS += --no-builtin-rules
 # include the default variables
 include .make/variables.env
 # include the local variables
+-include .make/local.env
+# include the current environment settings
 -include .make/.env
+
 # set default values for ENV and TAG to suppress "warning: undefined variable" when .make/.env does not exist yet
 ENV?=
 TAG?=
@@ -71,6 +78,7 @@ help:
 	@printf '%-43s \033[1mmake make-init ENVS="ENV=prod TAG=latest"\033[0m\n'
 	@awk 'BEGIN {FS = ":.*##"; printf "\n\033[1mUsage:\033[0m\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-40s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' Makefile .make/*.mk
 
+  	
 ##@ [Make]
 
 ENVS?=ENV=local TAG=latest

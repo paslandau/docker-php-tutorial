@@ -11,24 +11,26 @@ gcp-init: validate-gcp-variables ## Initialize the `gcloud` cli and authenticate
 validate-gcp-variables:
 	@$(if $(GCP_PROJECT_ID),,$(error "GCP_PROJECT_ID is undefined"))
 	@$(if $(GCP_ZONE),,$(error "GCP_ZONE is undefined"))
-	@$(if $(GCP_VM_NAME),,$(error "GCP_VM_NAME is undefined"))
 
 # @see https://cloud.google.com/sdk/gcloud/reference/compute/ssh
 .PHONY: gcp-ssh-command
 gcp-ssh-command: validate-gcp-variables ## Run an arbitrary SSH command on the VM via IAP tunnel. Usage: `make gcp-ssh-command COMMAND="whoami"`
+	@$(if $(VM_NAME),,$(error "VM_NAME is undefined"))
 	@$(if $(COMMAND),,$(error "COMMAND is undefined"))
-	gcloud compute ssh $(GCP_VM_NAME) --project $(GCP_PROJECT_ID) --zone $(GCP_ZONE) --tunnel-through-iap --command="$(COMMAND)"
+	gcloud compute ssh $(VM_NAME) --project $(GCP_PROJECT_ID) --zone $(GCP_ZONE) --tunnel-through-iap --command="$(COMMAND)"
 
 .PHONY: gcp-ssh-login
 gcp-ssh-login: validate-gcp-variables ## Log into a VM via IAP tunnel
-	gcloud compute ssh $(GCP_VM_NAME) --project $(GCP_PROJECT_ID) --zone $(GCP_ZONE) --tunnel-through-iap
+	@$(if $(VM_NAME),,$(error "VM_NAME is undefined"))
+	gcloud compute ssh $(VM_NAME) --project $(GCP_PROJECT_ID) --zone $(GCP_ZONE) --tunnel-through-iap
 
 # @see https://cloud.google.com/sdk/gcloud/reference/compute/scp
 .PHONY: gcp-scp-command
 gcp-scp-command: validate-gcp-variables ## Copy a file via scp to the VM via IAP tunnel. Usage: `make gcp-scp-command SOURCE="foo" DESTINATION="bar"`
+	@$(if $(VM_NAME),,$(error "VM_NAME is undefined"))
 	@$(if $(SOURCE),,$(error "SOURCE is undefined"))
 	@$(if $(DESTINATION),,$(error "DESTINATION is undefined"))
-	gcloud compute scp $(SOURCE) $(GCP_VM_NAME):$(DESTINATION) --project $(GCP_PROJECT_ID) --zone $(GCP_ZONE) --tunnel-through-iap
+	gcloud compute scp $(SOURCE) $(VM_NAME):$(DESTINATION) --project $(GCP_PROJECT_ID) --zone $(GCP_ZONE) --tunnel-through-iap
 
 # Defines the default secret version to retrieve from the Secret Manager
 SECRET_VERSION?=latest
@@ -41,13 +43,25 @@ gcp-secret-get: ## Retrieve and print the secret $(SECRET_NAME) in version $(SEC
 	@gcloud secrets versions access $(SECRET_VERSION) --secret=$(SECRET_NAME)
 
 .PHONY: gcp-docker-exec
-gcp-docker-exec: ## Run a command in a docker container on the VM. Usage: `make gcp-docker-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
+gcp-docker-exec: ## Run a command in a docker container vid compose on the VM. Usage: `make gcp-docker-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
 	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
 	@$(if $(DOCKER_COMMAND),,$(error "DOCKER_COMMAND is undefined"))
 	"$(MAKE)" -s gcp-ssh-command COMMAND="cd $(CODEBASE_DIRECTORY) && sudo make docker-exec DOCKER_SERVICE_NAME='$(DOCKER_SERVICE_NAME)' DOCKER_COMMAND='$(DOCKER_COMMAND)'"
 
-# @see https://cloud.google.com/compute/docs/instances/view-ip-address
-.PHONY: gcp-show-ip
-gcp-show-ip: ## Show the IP address of the VM specified by GCP_VM_NAME.
-	gcloud compute instances describe $(GCP_VM_NAME) --zone $(GCP_ZONE) --project=$(GCP_PROJECT_ID) --format='get(networkInterfaces[0].accessConfigs[0].natIP)'
+# see https://cloud.google.com/memorystore/docs/redis/auth-overview#auth_behavior
+# see https://cloud.google.com/memorystore/docs/redis/managing-auth#getting_the_auth_string
+.PHONY: gcp-get-redis-auth
+gcp-get-redis-auth: ## Get the AUTH string of the Redis service
+	gcloud redis instances get-auth-string $(VM_NAME_REDIS) --project=$(GCP_PROJECT_ID) --region=$(GCP_REGION)
 
+.PHONY: gcp-info-redis
+gcp-info-redis: ## Show redis information
+	gcloud redis instances list --project=$(GCP_PROJECT_ID) --region=$(GCP_REGION)
+
+.PHONY: gcp-info-mysql
+gcp-info-mysql: ## Show mysql information
+	gcloud sql instances list --project=$(GCP_PROJECT_ID)
+
+.PHONY: gcp-info-vms
+gcp-info-vms: ## Show VM information
+	gcloud compute instances list --project=$(GCP_PROJECT_ID)
