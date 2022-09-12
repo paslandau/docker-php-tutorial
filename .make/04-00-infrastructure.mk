@@ -19,7 +19,7 @@ infrastructure-setup-mysql: ## Set the mysql instance up
 
 .PHONY: infrastructure-setup-redis
 infrastructure-setup-redis: ## Set the redis instance up
-	bash .infrastructure/setup-redis.sh $(GCP_PROJECT_ID) $(ARGS)
+	bash .infrastructure/setup-redis.sh $(GCP_PROJECT_ID) $(VM_NAME_REDIS)  $(ARGS)
 
 .PHONY: infrastructure-setup-vm
 infrastructure-setup-vm: ## Setup the VM specified via VM_NAME. Usage: make infrastructure-setup-vm VM_NAME=php-worker ARGS=""
