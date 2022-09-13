@@ -35,6 +35,7 @@ DOCKER_COMPOSE_FILE_PHP_BASE:=$(DOCKER_COMPOSE_DIR)/docker-compose-php-base.yml
 DOCKER_COMPOSE_PROJECT_NAME:=dofroscra_$(ENV)
 
 # we need to "assemble" the correct combination of docker-compose.yml config files
+DOCKER_COMPOSE_FILES=
 ifeq ($(ENV),prod)
 	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL_PROD) -f $(DOCKER_COMPOSE_FILE_PROD)
 else ifeq ($(ENV),ci)
