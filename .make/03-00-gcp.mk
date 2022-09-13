@@ -1,11 +1,20 @@
 ##@ [GCP]
 
 .PHONY: gcp-init
-gcp-init: validate-gcp-variables ## Initialize the `gcloud` cli and authenticate docker with the keyfile defined via GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY.
-	@$(if $(GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY),,$(error "GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY is undefined"))
-	@$(if $(GCP_PROJECT_ID),,$(error "GCP_PROJECT_ID is undefined"))
-	gcloud auth activate-service-account --key-file="$(GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY)" --project="$(GCP_PROJECT_ID)"
-	cat "$(GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY)" | docker login -u _json_key --password-stdin https://gcr.io
+gcp-init: validate-gcp-variables ## Initialize the `gcloud` cli and authenticate docker with the keyfile defined via SERVICE_ACCOUNT_KEY_FILE.
+	@$(if $(SERVICE_ACCOUNT_KEY_FILE),,$(error "SERVICE_ACCOUNT_KEY_FILE is undefined"))
+	gcloud auth activate-service-account --key-file="$(SERVICE_ACCOUNT_KEY_FILE)" --project="$(GCP_PROJECT_ID)"
+
+.PHONY: gcp-init-deployment-account
+gcp-init-deployment-account: validate-gcp-variables ## Initialize the `gcloud` cli with the deployment service account 
+	@$(if $(GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY_FILE),,$(error "GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY_FILE is undefined"))
+	"$(MAKE)" gcp-init SERVICE_ACCOUNT_KEY_FILE=$(GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY_FILE)
+	cat "$(GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY_FILE)" | docker login -u _json_key --password-stdin https://gcr.io
+
+.PHONY: gcp-init-master-account
+gcp-init-master-account: validate-gcp-variables ## Initialize the `gcloud` cli with the master service account 
+	@$(if $(GCP_MASTER_SERVICE_ACCOUNT_KEY_FILE),,$(error "GCP_MASTER_SERVICE_ACCOUNT_KEY_FILE is undefined"))
+	"$(MAKE)" gcp-init SERVICE_ACCOUNT_KEY_FILE=$(GCP_MASTER_SERVICE_ACCOUNT_KEY_FILE)
 
 .PHONY: validate-gcp-variables
 validate-gcp-variables:

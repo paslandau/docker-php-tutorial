@@ -13,13 +13,13 @@ infrastructure-setup-gcp: ## Set the GCP project up
 	bash .infrastructure/setup-gcp.sh $(GCP_PROJECT_ID) $(ARGS)
 
 .PHONY: infrastructure-setup-mysql
-infrastructure-setup-mysql: ## Set the mysql instance up
+infrastructure-setup-mysql: ## Set the mysql instance up. The ROOT_PASSWORD variable is required to defined the password for the root user
 	@$(if $(ROOT_PASSWORD),,$(error "ROOT_PASSWORD is undefined"))
-	bash .infrastructure/setup-mysql.sh $(GCP_PROJECT_ID) $(VM_NAME_MYSQL) $(ROOT_PASSWORD)
+	bash .infrastructure/setup-mysql.sh $(GCP_PROJECT_ID) $(VM_NAME_MYSQL) $(ROOT_PASSWORD) $(ARGS)
 
 .PHONY: infrastructure-setup-redis
 infrastructure-setup-redis: ## Set the redis instance up
-	bash .infrastructure/setup-redis.sh $(GCP_PROJECT_ID) $(VM_NAME_REDIS)  $(ARGS)
+	bash .infrastructure/setup-redis.sh $(GCP_PROJECT_ID) $(VM_NAME_REDIS) $(ARGS)
 
 .PHONY: infrastructure-setup-vm
 infrastructure-setup-vm: ## Setup the VM specified via VM_NAME. Usage: make infrastructure-setup-vm VM_NAME=php-worker ARGS=""

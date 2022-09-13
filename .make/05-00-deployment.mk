@@ -11,8 +11,8 @@ deploy: # Build all images and deploy them to GCP
 	@make --no-print-directory deployment-guard-secret-changes
 	@printf "$(GREEN)Verifying that there are no uncommitted changes in the codebase$(NO_COLOR)\n"
 	@make --no-print-directory deployment-guard-uncommitted-changes
-	@printf "$(GREEN)Initializing gcloud$(NO_COLOR)\n"
-	@make --no-print-directory gcp-init
+	@printf "$(GREEN)Initializing gcloud deployment service account$(NO_COLOR)\n"
+	@make --no-print-directory gcp-init-deployment-account
 	@printf "$(GREEN)Switching to 'prod' environment$(NO_COLOR)\n"
 	@make --no-print-directory make-init ENVS="ENV=prod TAG=latest"
 	@printf "$(GREEN)Creating build information file$(NO_COLOR)\n"
