@@ -87,6 +87,10 @@ endif
 
 ##@ [Docker]
 
+.PHONY: docker-init
+docker-init: ## Initialize the .env file for docker compose
+	@cp $(DOCKER_ENV_FILE).example $(DOCKER_ENV_FILE)
+
 .PHONY: docker-clean
 docker-clean: ## Remove the .env file for docker
 	@rm -f $(DOCKER_ENV_FILE)

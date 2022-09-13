@@ -2,12 +2,12 @@
 
 .PHONY: dev-init
 dev-init: ## Run this command once after cloning the repo to initialize everything (make, docker, gpg, ...)
+	@printf	"$(GREEN)Initializing 'make'$(NO_COLOR)\n"
+	"$(MAKE)" -s make-init
 	@printf	"$(GREEN)Verifying local tools$(NO_COLOR)\n"
 	"$(MAKE)" -s dev-verify-tools
 	@printf	"$(GREEN)Verifying 'docker compose' version$(NO_COLOR)\n"
 	"$(MAKE)" -s dev-verify-compose-version
-	@printf	"$(GREEN)Initializing 'make'$(NO_COLOR)\n"
-	"$(MAKE)" -s make-init
 	@printf	"$(GREEN)Initializing user id$(NO_COLOR)\n"
 	"$(MAKE)" -s dev-init-user-id
 	@printf	"$(GREEN)Copying the secret gpg key of the tutorial to './secret.gpg'$(NO_COLOR)\n"
