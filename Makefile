@@ -42,8 +42,6 @@ MAKEFLAGS += --no-builtin-rules
 
 # include the default variables
 include .make/variables.env
-# include the local variables
--include .make/local.env
 # include the current environment settings
 -include .make/.env
 

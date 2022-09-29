@@ -34,10 +34,9 @@ dev-init: ## Run this command once after cloning the repo to initialize everythi
 
 .PHONY: dev-init-user-id
 dev-init-user-id: ## Set the correct user id for linux users to avoid permission issues, see https://www.pascallandau.com/blog/docker-from-scratch-for-php-applications-in-2022/#solving-permission-issues
-	@rm -rf .make/local.env
 	@if [ "$(OS)" = "Linux" ]; then \
-		printf "APP_USER_ID=%s\n" $$(id -u) > .make/local.env; \
-	  	printf "APP_GROUP_ID=%s\n" $$(id -g) >> .make/local.env; \
+		printf "APP_USER_ID=%s\n" $$(id -u) > .make/.env; \
+	  	printf "APP_GROUP_ID=%s\n" $$(id -g) >> .make/.env; \
   	else \
   	  	printf "$(YELLOW)Nothing to do (not a Linux system)$(NO_COLOR)\n"; \
   	fi;
