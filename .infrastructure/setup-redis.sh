@@ -6,8 +6,7 @@ set -e
 usage="Usage: setup-redis.sh project_id"
 [ -z "$1" ] &&  echo "No project_id given! $usage" && exit 1
 
-GREEN="\033[0;32m"
-NO_COLOR="\033[0m"
+. $(dirname "$0")/include/include.sh
 
 project_id=$1
 redis_instance_name=$2

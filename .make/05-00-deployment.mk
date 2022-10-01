@@ -12,8 +12,10 @@ deploy: ## Build all images and deploy them to GCP
 	@printf "$(GREEN)Verifying that there are no uncommitted changes in the codebase$(NO_COLOR)\n"
 	@"$(MAKE)" deployment-guard-uncommitted-changes
 	@printf "$(GREEN)Initializing gcloud deployment service account$(NO_COLOR)\n"
-	@"$(MAKE)" gcp-init-deployment-account
-	@printf "$(GREEN)Switching to 'prod' environment (via 'deployment-settings.env' file)$(NO_COLOR)\n"
+	@"$(MAKE)" gcp-activate-deployment-account
+	@printf "$(GREEN)Authentication docker with the deployment service account$(NO_COLOR)\n"
+	@"$(MAKE)" gcp-authenticate-docker SERVICE_ACCOUNT_KEY_FILE=$(GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY_FILE)
+	@printf "$(GREEN)Switching to 'prod' environment ('deployment-settings.env' file)$(NO_COLOR)\n"
 	@"$(MAKE)" make-init-deployment-settings ENVS="ENV=prod TAG=latest"
 	@printf "$(GREEN)Creating build information file$(NO_COLOR)\n"
 	@"$(MAKE)" deployment-create-build-info-file
@@ -39,10 +41,10 @@ IGNORE_SECRET_CHANGES?=
 
 .PHONY: deployment-guard-secret-changes
 deployment-guard-secret-changes: ## Check if there are any changes between the decrypted and encrypted secret files
-	@if ( ! make secret-diff || [ "$$(make secret-diff | grep ^@@)" != "" ] ) && [ "$(IGNORE_SECRET_CHANGES)" == "" ] ; then \
+	@if ( ! "$(MAKE)" secret-diff || [ "$$("$(MAKE)" secret-diff | grep ^@@)" != "" ] ) && [ "$(IGNORE_SECRET_CHANGES)" == "" ] ; then \
         printf "Found changes in the secret files => $(RED)ABORTING$(NO_COLOR)\n\n"; \
         printf "Use with IGNORE_SECRET_CHANGES=true to ignore this warning\n\n"; \
-        make secret-diff; \
+        "$(MAKE)" secret-diff; \
         exit 1; \
     fi
 	@echo "No changes in the secret files!"
@@ -151,11 +153,11 @@ deployment-info: ## Print information about the deployed containers
   		vm_name=`echo $$vm_name_service_name | cut -d ":" -f 1`; \
   		service_name=`echo $$vm_name_service_name | cut -d ":" -f 2`; \
   		printf "$(GREEN)$$service_name:$(NO_COLOR)\n"; \
-		make -s gcp-ssh-command VM_NAME="$$vm_name" COMMAND="sudo docker ps"; \
+		"$(MAKE)" -s gcp-ssh-command VM_NAME="$$vm_name" COMMAND="sudo docker ps"; \
 		if [ "$$service_name" != "$(DOCKER_SERVICE_NAME_NGINX)" ]; then \
-			make -s gcp-docker-exec VM_NAME="$$vm_name" DOCKER_SERVICE_NAME="$$service_name" DOCKER_COMMAND="cat build-info"; \
+			"$(MAKE)" -s gcp-docker-exec VM_NAME="$$vm_name" DOCKER_SERVICE_NAME="$$service_name" DOCKER_COMMAND="cat build-info"; \
 		fi; \
   		printf "\n\n"; \
   	done; \
-  	public_ip=$$(make -s gcp-get-public-ip-vm VM_NAME=$(VM_NAME_NGINX)); \
+  	public_ip=$$("$(MAKE)" -s gcp-get-public-ip-vm VM_NAME=$(VM_NAME_NGINX)); \
   	echo "Visit the UI at: http://$$public_ip/";

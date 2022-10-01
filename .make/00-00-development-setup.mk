@@ -19,11 +19,11 @@ dev-init: ## Run this command once after cloning the repo to initialize everythi
 	@printf	"$(GREEN)DONE$(NO_COLOR)\n"
 	@echo "" 
 	@printf	"$(GREEN)Next steps:$(NO_COLOR)\n"
-	@echo " - run 'make docker-compose-build'    to build the docker setup" 
-	@echo " - run 'make docker-compose-up'       to start the docker setup" 
-	@echo " - run 'make setup'           to set up the application (e.g. composer dependencies, app key and database)"
-	@echo " - run 'make gpg-init'        to initialize gpg in the running containers"
-	@echo " - run 'make secret-decrypt'  to decrypt the secrets"
+	@echo " - run 'make docker-compose-build' to build the docker setup" 
+	@echo " - run 'make docker-compose-up'    to start the docker setup" 
+	@echo " - run 'make setup'                to set up the application (e.g. composer dependencies, app key and database)"
+	@echo " - run 'make gpg-init'             to initialize gpg in the running containers"
+	@echo " - run 'make secret-decrypt'       to decrypt the secrets"
 	@echo "" 
 	@printf	"==> You should now be able to open http://127.0.0.1/ and see the UI\n"
 	@echo "" 
@@ -55,7 +55,7 @@ dev-verify-compose-version: ## Verify, that docker uses compose version >= v2.5
 # see https://stackoverflow.com/a/677212/413531
 .PHONY: dev-verify-tools
 dev-verify-tools: ## Verify, that the necessary tools exist locally
-	@tools="docker bash gcloud"; \
+	@tools="docker bash sed tar"; \
 	for tool in $$tools; do \
 		command -v $$tool >/dev/null 2>&1 || { printf "$(RED)Command '$$tool' not found$(NO_COLOR)\n"; exit 1; } \
 	done;

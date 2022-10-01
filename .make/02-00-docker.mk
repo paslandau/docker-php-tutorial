@@ -36,18 +36,10 @@ else ifeq ($(ENV),local)
 	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL_CI) -f $(DOCKER_COMPOSE_FILE_LOCAL_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL)
 endif
 
-# We need a couple of environment variables for docker-compose so we define a make-variable that we can
-# then reference later in the Makefile without having to repeat all the environment variables
-# 
-# Note:
-# MSYS_NO_PATHCONV=1 is required due to the handling of
-# leading slashes of MinGW on Windows which would translate 
-# the path to a Windows Path like "/c/Program and Files/var/www/app"
-# using "//" does NOT work as expected, because "//var/www/app" and "/var/www/app" are not identical
-# which e.g. is a problem for git's permission handling https://www.pascallandau.com/blog/git-secret-encrypt-repository-docker/#the-git-permission-issue
-# @see https://stackoverflow.com/a/34386471/413531
+# We need a couple of environment variables for docker compose so we define a make variable that we can
+# then reference later in the Makefile without having to repeat all the environment variables every time
+# @see https://www.pascallandau.com/blog/docker-from-scratch-for-php-applications-in-2022/#make-docker-3
 DOCKER_COMPOSE_COMMAND:= \
- MSYS_NO_PATHCONV=1 \
  ENV=$(ENV) \
  TAG=$(TAG) \
  DOCKER_REGISTRY=$(DOCKER_REGISTRY) \

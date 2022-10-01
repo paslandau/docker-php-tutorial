@@ -68,6 +68,7 @@ available containing all videos of the tutorial series.
 - [Deploy dockerized PHP Apps to production on GCP via `docker compose`](#deploy-dockerized-php-apps-to-production-on-gcp-via-docker-compose)
 - [Create a production infrastructure for dockerized PHP Apps on GCP](#create-a-production-infrastructure-for-dockerized-php-apps-on-gcp)
 - [Deploy dockerized PHP Apps to production](#deploy-dockerized-php-apps-to-production)
+- [Use the `gcloud` cli docker image instead of installing it locally](#use-the-gcloud-cli-docker-image-instead-of-installing-it-locally)
 
 ### Planned (already used by us but not put into writing):
 
@@ -211,6 +212,16 @@ and managed services for `redis` and `mysql`.
 
 Deploy a dockerized PHP application to a production environment on GCP using multiple VMs and 
 run it via "plain" `docker` (without `compose`).
+
+### Use the `gcloud` cli docker image instead of installing it locally
+
+- Status: published ✓
+- Link: https://www.pascallandau.com/blog/use-gcloud-cli-docker-image/
+- Branch:
+  [Part 12](https://github.com/paslandau/docker-php-tutorial/tree/part-12-use-gcloud-cli-docker-image)
+
+Replace the locally installed `gcloud` cli tool with the official `gcloud` cli docker image and 
+integrate it in the setup and deployment process.
 
 ### Scaling Dockerized PHP Applications with Terraform and Kubernetes on GCP/AWS
 

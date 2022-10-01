@@ -8,6 +8,9 @@ SHELL := bash
 # @see https://stackoverflow.com/a/70856332/413531
 DOCKER_COMPOSE_EXEC_OPTIONS=-T
 
+# Empty for Linux and Mac
+WINPTY_PREFIX=
+
 # OS is a defined variable for WIN systems, so "uname" will not be executed
 OS?=$(shell uname)
 # Values of OS:
@@ -18,6 +21,15 @@ ifeq ($(OS),Windows_NT)
 	# Windows requires the .exe extension, otherwise the entry is ignored
 	# @see https://stackoverflow.com/a/60318554/413531
     SHELL := bash.exe
+    # When allocating a terminal, the corresponding command must be prefixed
+    # with `winpty` to avoid the "The input device is not a TTY" error
+    # @see http://www.pascallandau.com/blog/setting-up-git-bash-mingw-msys2-on-windows/#the-role-of-winpty-fixing-the-input-device-is-not-a-tty
+	WINPTY_PREFIX=winpty
+	# Export MSYS_NO_PATHCONV=1 as environment variable to avoid automatic path conversion
+	# (the export does only apply locally to `make` and the scripts that are invoked,
+	# it does not affect the global environment)
+    # @see http://www.pascallandau.com/blog/setting-up-git-bash-mingw-msys2-on-windows/#fixing-the-path-conversion-issue-for-mingw-msys2
+		export MSYS_NO_PATHCONV=1
 else ifeq ($(OS),Darwin)
     # On Mac, the -T must be omitted to avoid cluttered output
     # @see https://github.com/moby/moby/issues/37366#issuecomment-401157643
@@ -106,4 +118,10 @@ make-init-deployment-settings: ## Create a `deployment-settings.env` file to ens
 
 .PHONY: make-remove-deployment-settings
 make-remove-deployment-settings: ## Remove the `deployment-settings.env` file 
-	@rm -f .make/deployment-settings.env
+	rm -f .make/deployment-settings.env
+
+.PHONY: docs
+docs: ## Show the docu for the target specified by TARGET. 
+	@$(if $(TARGET),,$(error TARGET is undefined. Usage: $@ TARGET=docs))
+	@"$(MAKE)" -s | grep $(TARGET)
+

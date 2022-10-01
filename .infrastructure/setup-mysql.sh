@@ -8,8 +8,7 @@ usage="Usage: setup-mysql.sh project_id mysql_instance_name root_password"
 [ -z "$2" ] &&  echo "No mysql_instance_name given! $usage" && exit 1
 [ -z "$3" ] &&  echo "No root_password given! $usage" && exit 1
 
-GREEN="\033[0;32m"
-NO_COLOR="\033[0m"
+. $(dirname "$0")/include/include.sh
 
 project_id=$1
 # Note:

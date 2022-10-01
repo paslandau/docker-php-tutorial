@@ -8,7 +8,7 @@ usage="Usage: deploy.sh docker_service_name"
 docker_service_name=$1
 
 echo "Initializing the codebase"
-make make-init ENVS="ENV=prod TAG=latest"
+make make-init ENVS="ENV=prod TAG=latest EXECUTE_GCLOUD_IN_CONTAINER=false"
 echo "Retrieving secrets"
 make gcp-secret-get SECRET_NAME=GPG_KEY > secret.gpg
 GPG_PASSWORD=$(make gcp-secret-get SECRET_NAME=GPG_PASSWORD)
