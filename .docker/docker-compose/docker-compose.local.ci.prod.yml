@@ -1,17 +1,5 @@
 version: '3.7'
 
-networks:
-  network:
-    driver: ${NETWORKS_DRIVER?}
-
-volumes:
-  mysql:
-    name: mysql-${ENV?}
-    driver: ${VOLUMES_DRIVER?}
-  redis:
-    name: redis-${ENV?}
-    driver: ${VOLUMES_DRIVER?}
-
 services:
   application:
     image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/application-${ENV?}:${TAG?}
@@ -22,38 +10,3 @@ services:
       args:
         - BASE_IMAGE=${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-base-${ENV?}:${TAG?}
         - ENV=${ENV?}
-    networks:
-      - network
-    # will keep the container running, even though there is no 
-    # long-running process defined as entrypoint for the container
-    # @see https://stackoverflow.com/a/55953120
-    tty: true
-
-  mysql:
-    image: mysql:${MYSQL_VERSION?}
-    platform: linux/amd64
-    environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE:-application_db}
-      - MYSQL_USER=${MYSQL_USER:-application_user}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD?}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD?}
-      - TZ=${TIMEZONE:-UTC}
-    networks:
-      - network
-    healthcheck:
-      # Only mark the service as healthy if mysql is ready to accept connections
-      # Check every 2 seconds for 30 times, each check has a timeout of 1s
-      # @see https://stackoverflow.com/a/54854239/413531
-      # @see https://docs.docker.com/engine/reference/builder/#healthcheck
-      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
-      timeout: 1s
-      retries: 30
-      interval: 2s
-  
-  redis:
-    image: redis:${REDIS_VERSION?}
-    # @see https://stackoverflow.com/a/69498392/413531
-    command: >
-      --requirepass ${REDIS_PASSWORD?}
-    networks:
-      - network

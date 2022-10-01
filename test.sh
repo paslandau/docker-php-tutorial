@@ -10,11 +10,11 @@ function info(){
 
 info "Building the docker setup"
 make make-init
-make docker-build
+make docker-compose-build
 
 info "Starting the docker setup"
-make docker-down
-make docker-up
+make docker-compose-down
+make docker-compose-up
 
 info "Clearing DB"
 sleep 0.5

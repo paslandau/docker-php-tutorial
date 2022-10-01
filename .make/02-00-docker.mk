@@ -7,14 +7,6 @@ DOCKER_BUILDKIT?=1
 export COMPOSE_DOCKER_CLI_BUILD
 export DOCKER_BUILDKIT
 
-# Container names
-## must match the names used in the docker-composer.yml files
-DOCKER_SERVICE_NAME_NGINX:=nginx
-DOCKER_SERVICE_NAME_PHP_BASE:=php-base
-DOCKER_SERVICE_NAME_PHP_FPM:=php-fpm
-DOCKER_SERVICE_NAME_PHP_WORKER:=php-worker
-DOCKER_SERVICE_NAME_APPLICATION:=application
-
 # FYI:
 # Naming convention for images is $(DOCKER_REGISTRY)/$(DOCKER_NAMESPACE)/$(DOCKER_SERVICE_NAME)-$(ENV)
 # e.g.               docker.io/dofroscra/nginx-local
@@ -27,26 +19,35 @@ DOCKER_DIR:=./.docker
 DOCKER_ENV_FILE:=$(DOCKER_DIR)/.env
 DOCKER_COMPOSE_DIR:=$(DOCKER_DIR)/docker-compose
 DOCKER_COMPOSE_FILE_LOCAL_CI_PROD:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.ci.prod.yml
+DOCKER_COMPOSE_FILE_LOCAL_CI:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.ci.yml
 DOCKER_COMPOSE_FILE_LOCAL_PROD:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.prod.yml
 DOCKER_COMPOSE_FILE_LOCAL:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.yml
 DOCKER_COMPOSE_FILE_CI:=$(DOCKER_COMPOSE_DIR)/docker-compose.ci.yml
-DOCKER_COMPOSE_FILE_PROD:=$(DOCKER_COMPOSE_DIR)/docker-compose.prod.yml
 DOCKER_COMPOSE_FILE_PHP_BASE:=$(DOCKER_COMPOSE_DIR)/docker-compose-php-base.yml
 DOCKER_COMPOSE_PROJECT_NAME:=dofroscra_$(ENV)
 
-# we need to "assemble" the correct combination of docker-compose.yml config files
-DOCKER_COMPOSE_FILES=
+# We need to "assemble" the correct combination of docker-compose.yml config files
+DOCKER_COMPOSE_FILES:=
 ifeq ($(ENV),prod)
-	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL_PROD) -f $(DOCKER_COMPOSE_FILE_PROD)
+	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL_PROD)
 else ifeq ($(ENV),ci)
-	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_CI)
+	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL_CI) -f $(DOCKER_COMPOSE_FILE_CI)
 else ifeq ($(ENV),local)
-	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL)
+	DOCKER_COMPOSE_FILES:=-f $(DOCKER_COMPOSE_FILE_LOCAL_CI_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL_CI) -f $(DOCKER_COMPOSE_FILE_LOCAL_PROD) -f $(DOCKER_COMPOSE_FILE_LOCAL)
 endif
 
-# we need a couple of environment variables for docker-compose so we define a make-variable that we can
+# We need a couple of environment variables for docker-compose so we define a make-variable that we can
 # then reference later in the Makefile without having to repeat all the environment variables
+# 
+# Note:
+# MSYS_NO_PATHCONV=1 is required due to the handling of
+# leading slashes of MinGW on Windows which would translate 
+# the path to a Windows Path like "/c/Program and Files/var/www/app"
+# using "//" does NOT work as expected, because "//var/www/app" and "/var/www/app" are not identical
+# which e.g. is a problem for git's permission handling https://www.pascallandau.com/blog/git-secret-encrypt-repository-docker/#the-git-permission-issue
+# @see https://stackoverflow.com/a/34386471/413531
 DOCKER_COMPOSE_COMMAND:= \
+ MSYS_NO_PATHCONV=1 \
  ENV=$(ENV) \
  TAG=$(TAG) \
  DOCKER_REGISTRY=$(DOCKER_REGISTRY) \
@@ -54,6 +55,7 @@ DOCKER_COMPOSE_COMMAND:= \
  APP_USER_ID=$(APP_USER_ID) \
  APP_GROUP_ID=$(APP_GROUP_ID) \
  APP_USER_NAME=$(APP_USER_NAME) \
+ APP_CODE_PATH_CONTAINER=$(APP_CODE_PATH_CONTAINER) \
  docker compose -p $(DOCKER_COMPOSE_PROJECT_NAME) --env-file $(DOCKER_ENV_FILE)
 
 DOCKER_COMPOSE:=$(DOCKER_COMPOSE_COMMAND) $(DOCKER_COMPOSE_FILES)
@@ -86,73 +88,74 @@ ifeq ($(EXECUTE_IN_CONTAINER),true)
 endif
 
 
-##@ [Docker]
+##@ [Docker compose]
 
-.PHONY: docker-init
-docker-init: ## Initialize the .env file for docker compose
+.PHONY: docker-compose-init
+docker-compose-init: ## Initialize the .env file for docker compose
 	@cp $(DOCKER_ENV_FILE).example $(DOCKER_ENV_FILE)
-
-.PHONY: docker-clean
-docker-clean: ## Remove the .env file for docker
+	
+.PHONY: docker-compose-clean
+docker-compose-clean: ## Remove the .env file for docker compose
 	@rm -f $(DOCKER_ENV_FILE)
 
-.PHONY: validate-docker-variables
-validate-docker-variables: .docker/.env compose-secrets.env
-	@$(if $(TAG),,$(error TAG is undefined))
-	@$(if $(ENV),,$(error ENV is undefined))
-	@$(if $(DOCKER_REGISTRY),,$(error DOCKER_REGISTRY is undefined - Did you run make-init?))
-	@$(if $(DOCKER_NAMESPACE),,$(error DOCKER_NAMESPACE is undefined - Did you run make-init?))
-	@$(if $(APP_USER_ID),,$(error APP_USER_ID is undefined - Did you run make-init?))
-	@$(if $(APP_GROUP_ID),,$(error APP_GROUP_ID is undefined - Did you run make-init?))
-	@$(if $(APP_USER_NAME),,$(error APP_USER_NAME is undefined - Did you run make-init?))
+.PHONY: validate-docker-compose-variables
+validate-docker-compose-variables: validate-docker-variables
+	@$(if $(APP_USER_NAME),,$(error APP_USER_NAME is undefined))
+	@$(if $(APP_USER_ID),,$(error APP_USER_ID is undefined))
+	@$(if $(APP_GROUP_ID),,$(error APP_GROUP_ID is undefined))
 
-.docker/.env:
-	@cp $(DOCKER_ENV_FILE).example $(DOCKER_ENV_FILE)
-
-compose-secrets.env:
-	@echo "# This file only exists because docker compose cannot run 'build' otherwise," > ./compose-secrets.env
-	@echo "# as it is referenced as an 'env_file' in the docker compose config file" >> ./compose-secrets.env
-	@echo "# for the 'prod' environment. On 'prod' it will contain the necessary ENV variables," >> ./compose-secrets.env
-	@echo "# but on all other environments this 'placeholder' file is created." >> ./compose-secrets.env
-	@echo "# The file is generated automatically via 'make' if a docker compose target is executed" >> ./compose-secrets.env
-	@echo "# @see https://github.com/docker/compose/issues/1973#issuecomment-1148257736" >> ./compose-secrets.env
-
-.PHONY:docker-build-image
-docker-build-image: validate-docker-variables ## Build all docker images OR a specific image by providing the service name via: make docker-build DOCKER_SERVICE_NAME=<service>
+.PHONY: docker-compose-build-image
+docker-compose-build-image: validate-docker-compose-variables ## Build all docker images OR a specific image by providing the service name via: make docker-compose-build DOCKER_SERVICE_NAME=<service>
 	$(DOCKER_COMPOSE) build $(DOCKER_SERVICE_NAME) $(ARGS)
 
-.PHONY: docker-build-php
-docker-build-php: validate-docker-variables ## Build the php base image
+.PHONY: docker-compose-build-php
+docker-compose-build-php: validate-docker-compose-variables ## Build the php base image
 	$(DOCKER_COMPOSE_PHP_BASE) build $(DOCKER_SERVICE_NAME_PHP_BASE) $(ARGS)
 
-.PHONY: docker-build
-docker-build: docker-build-php docker-build-image ## Build the php image and then all other docker images
+.PHONY: docker-compose-build
+docker-compose-build: docker-compose-build-php docker-compose-build-image ## Build the php image and then all other docker images
 
-.PHONY: docker-up
-docker-up: validate-docker-variables ## Create and start all docker containers. To create/start only a specific container, use DOCKER_SERVICE_NAME=<service>
+.PHONY: docker-compose-up
+docker-compose-up: validate-docker-compose-variables ## Create and start all docker containers. To create/start only a specific container, use DOCKER_SERVICE_NAME=<service>
 	$(DOCKER_COMPOSE) up -d $(DOCKER_SERVICE_NAME)
 
-.PHONY: docker-down
-docker-down: validate-docker-variables ## Stop and remove all docker containers.
+.PHONY: docker-compose-down
+docker-compose-down: validate-docker-compose-variables ## Stop and remove all docker containers.
 	@$(DOCKER_COMPOSE) down
 
-.PHONY: docker-config
-docker-config: validate-docker-variables ## List the configuration
+.PHONY: docker-compose-config
+docker-compose-config: validate-docker-compose-variables ## List the configuration
 	@$(DOCKER_COMPOSE) config
 
-.PHONY: docker-push
-docker-push: validate-docker-variables ## Push all docker images to the remote repository
+.PHONY: docker-compose-push
+docker-compose-push: validate-docker-compose-variables ## Push all docker images to the remote repository
 	$(DOCKER_COMPOSE) push $(ARGS)
 
-.PHONY: docker-pull
-docker-pull: validate-docker-variables ## Pull all docker images from the remote repository
+.PHONY: docker-compose-pull
+docker-compose-pull: validate-docker-compose-variables ## Pull all docker images from the remote repository
 	$(DOCKER_COMPOSE) pull $(ARGS)
 
-.PHONY: docker-exec
-docker-exec: validate-docker-variables ## Execute a command in a docker container. Usage: `make docker-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
+.PHONY: docker-compose-exec
+docker-compose-exec: validate-docker-compose-variables ## Execute a command in a docker container. Usage: `make docker-compose-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
 	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
 	@$(if $(DOCKER_COMMAND),,$(error "DOCKER_COMMAND is undefined"))
 	$(DOCKER_COMPOSE) exec -T $(DOCKER_SERVICE_NAME) $(DOCKER_COMMAND)
+
+# `docker build` and `docker compose build` are behaving differently
+# @see https://github.com/docker/compose/issues/9508
+.PHONY: docker-compose-show-build-context
+docker-compose-show-build-context: ## Show all files that are in the docker build context for `docker compose build`
+	@.dev/scripts/docker-compose-build-context/show-build-context.sh
+
+##@ [Docker]
+
+.PHONY: validate-docker-variables
+validate-docker-variables:
+	@$(if $(TAG),,$(error TAG is undefined - Did you run 'make make-init'?))
+	@$(if $(ENV),,$(error ENV is undefined - Did you run 'make make-init'?))
+	@$(if $(DOCKER_REGISTRY),,$(error DOCKER_REGISTRY is undefined))
+	@$(if $(DOCKER_NAMESPACE),,$(error DOCKER_NAMESPACE is undefined))
+	@$(if $(APP_CODE_PATH_CONTAINER),,$(error APP_CODE_PATH_CONTAINER is undefined))
 
 .PHONY: docker-prune
 docker-prune: ## Remove ALL unused docker resources, including volumes
@@ -165,13 +168,46 @@ docker-show-build-context: ## Show all files that are in the docker build contex
 	@echo -e "FROM busybox\nCOPY . /codebase\nCMD find /codebase -print" | docker image build --no-cache -t build-context -f - .
 	@docker run --rm build-context | sort
 
-# `docker build` and `docker compose build` are behaving differently
-# @see https://github.com/docker/compose/issues/9508
-.PHONY: docker-show-compose-build-context
-docker-show-compose-build-context: ## Show all files that are in the docker build context for `docker compose build`
-	@.dev/scripts/docker-compose-build-context/show-build-context.sh
+.PHONY: docker-pull
+docker-pull: validate-docker-variables ## Pull a single docker images from the remote repository
+	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
+	docker pull $(DOCKER_REGISTRY)/$(DOCKER_NAMESPACE)/$(DOCKER_SERVICE_NAME)-$(ENV):$(TAG)
 
-# Note: This is only a temporary target until https://github.com/docker/for-win/issues/12742 is fixed
-.PHONY: docker-fix-mount-permissions
-docker-fix-mount-permissions: ## Fix the permissions of the bind-mounted folder, @see https://github.com/docker/for-win/issues/12742
-	$(EXECUTE_IN_APPLICATION_CONTAINER) ls -al
+.PHONY: docker-run
+docker-run: validate-docker-variables ## Start a single docker container
+	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
+	@$(if $(HOST_STRING),,$(error "HOST_STRING is undefined"))
+	docker run 	--name $(DOCKER_SERVICE_NAME) \
+				-d \
+				-it \
+				--env-file compose-secrets.env \
+				--mount type=bind,source="$$(pwd)"/secret.gpg,target=$(APP_CODE_PATH_CONTAINER)/secret.gpg,readonly \
+				$(HOST_STRING) \
+				$(DOCKER_SERVICE_OPTIONS) \
+				$(DOCKER_REGISTRY)/$(DOCKER_NAMESPACE)/$(DOCKER_SERVICE_NAME)-$(ENV):$(TAG)
+
+.PHONY: docker-run-nginx
+docker-run-nginx: ## Start the nginx container
+	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_NGINX)" DOCKER_SERVICE_OPTIONS="-p 80:80 -p 443:443"
+
+.PHONY: docker-run-php-fpm
+docker-run-php-fpm: ## Start the php-fpm container
+	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_PHP_FPM)" DOCKER_SERVICE_OPTIONS="-p 9000:9000"
+
+.PHONY: docker-run-application
+docker-run-application: ## Start the application container
+	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_APPLICATION)" DOCKER_SERVICE_OPTIONS=""
+
+.PHONY: docker-run-php-worker
+docker-run-php-worker: ## Start the php-worker container
+	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_PHP_WORKER)" DOCKER_SERVICE_OPTIONS=""
+
+.PHONY: docker-stop
+docker-stop: validate-docker-variables ## Stop a single docker container
+	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
+	docker stop $(DOCKER_SERVICE_NAME)
+
+.PHONY: docker-rm
+docker-rm: validate-docker-variables ## Remove a single docker container
+	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
+	docker rm $(DOCKER_SERVICE_NAME)

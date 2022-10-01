@@ -14,7 +14,9 @@ services:
       - "seccomp=unconfined"
     extra_hosts:
       - host.docker.internal:host-gateway
-      
+    networks:
+      - network
+
   php-worker:
     environment:
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
@@ -28,8 +30,19 @@ services:
       - "seccomp=unconfined"
     extra_hosts:
       - host.docker.internal:host-gateway
-  
+    networks:
+      - network
+
   nginx:
+    ports:
+      - "${NGINX_HOST_HTTP_PORT:-80}:80"
+      - "${NGINX_HOST_HTTPS_PORT:-443}:443"
+    networks:
+      network:
+        aliases:
+          - ${APP_HOST?}
+    depends_on:
+      - php-fpm    
     volumes:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
 
@@ -55,7 +68,11 @@ services:
   mysql:
     ports:
       - "${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      - mysql:/var/lib/mysql
   
   redis:
     ports:
       - "${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - redis:/data

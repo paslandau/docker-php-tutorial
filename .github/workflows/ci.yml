@@ -49,12 +49,12 @@ jobs:
       - name: SETUP DOCKER
         run: |
           make make-init ENVS="ENV=ci TAG=latest EXECUTE_IN_CONTAINER=true GPG_PASSWORD=${{ secrets.GPG_PASSWORD }}"
-          make docker-build
+          make docker-compose-build
           mkdir .build && chmod 777 .build
           
       - name: START DOCKER
         run: |
-          make docker-up
+          make docker-compose-up
           make gpg-init
           make secret-decrypt-with-password
           

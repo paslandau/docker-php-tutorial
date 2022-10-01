@@ -13,14 +13,14 @@ dev-init: ## Run this command once after cloning the repo to initialize everythi
 	@printf	"$(GREEN)Copying the secret gpg key of the tutorial to './secret.gpg'$(NO_COLOR)\n"
 	cp .tutorial/secret.gpg.example ./secret.gpg
 	@printf	"$(GREEN)Intializing 'docker'$(NO_COLOR)\n"
-	"$(MAKE)" -s docker-init
+	"$(MAKE)" -s docker-compose-init
 	@printf	"$(GREEN)Copying the example .env file to './.env'$(NO_COLOR)\n"
 	cp ./.env.example ./.env
 	@printf	"$(GREEN)DONE$(NO_COLOR)\n"
 	@echo "" 
 	@printf	"$(GREEN)Next steps:$(NO_COLOR)\n"
-	@echo " - run 'make docker-build'    to build the docker setup" 
-	@echo " - run 'make docker-up'       to start the docker setup" 
+	@echo " - run 'make docker-compose-build'    to build the docker setup" 
+	@echo " - run 'make docker-compose-up'       to start the docker setup" 
 	@echo " - run 'make setup'           to set up the application (e.g. composer dependencies, app key and database)"
 	@echo " - run 'make gpg-init'        to initialize gpg in the running containers"
 	@echo " - run 'make secret-decrypt'  to decrypt the secrets"
@@ -55,9 +55,8 @@ dev-verify-compose-version: ## Verify, that docker uses compose version >= v2.5
 # see https://stackoverflow.com/a/677212/413531
 .PHONY: dev-verify-tools
 dev-verify-tools: ## Verify, that the necessary tools exist locally
-	@tools="docker bash"; \
+	@tools="docker bash gcloud"; \
 	for tool in $$tools; do \
 		command -v $$tool >/dev/null 2>&1 || { printf "$(RED)Command '$$tool' not found$(NO_COLOR)\n"; exit 1; } \
 	done;
 	@printf "$(YELLOW)All tools exist$(NO_COLOR)\n"; \
-

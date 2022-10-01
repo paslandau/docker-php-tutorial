@@ -67,6 +67,7 @@ available containing all videos of the tutorial series.
 - [A primer on GCP Compute Instance VMs for dockerized Apps](#a-primer-on-gcp-compute-instance-vms-for-dockerized-apps)
 - [Deploy dockerized PHP Apps to production on GCP via `docker compose`](#deploy-dockerized-php-apps-to-production-on-gcp-via-docker-compose)
 - [Create a production infrastructure for dockerized PHP Apps on GCP](#create-a-production-infrastructure-for-dockerized-php-apps-on-gcp)
+- [Deploy dockerized PHP Apps to production](#deploy-dockerized-php-apps-to-production)
 
 ### Planned (already used by us but not put into writing):
 
@@ -203,9 +204,13 @@ and managed services for `redis` and `mysql`.
 
 ### Deploy dockerized PHP Apps to production
 
-- Status: draft
-- Link:
-- Branch: 
+- Status: published ✓
+- Link: https://www.pascallandau.com/blog/deploy-dockerized-php-app-production/
+- Branch:
+  [Part 11](https://github.com/paslandau/docker-php-tutorial/tree/part-11-deploy-dockerized-php-app-production)
+
+Deploy a dockerized PHP application to a production environment on GCP using multiple VMs and 
+run it via "plain" `docker` (without `compose`).
 
 ### Scaling Dockerized PHP Applications with Terraform and Kubernetes on GCP/AWS
 

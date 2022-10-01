@@ -3,7 +3,12 @@
 .PHONY: setup
 setup: ## Setup the application
 	"$(MAKE)" composer ARGS="install"
+	"$(MAKE)" setup-app-key
 	"$(MAKE)" setup-db
+
+.PHONY: setup-app-key
+setup-app-key: ## Setup the APP_KEY ENV variable in the .env file
+	$(EXECUTE_IN_APPLICATION_CONTAINER) php artisan key:generate $(ARGS)
 
 .PHONY: setup-db
 setup-db: ## Setup the DB tables

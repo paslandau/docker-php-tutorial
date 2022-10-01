@@ -1,34 +1,36 @@
 ##@ [Deployment]
 
 .PHONY: deploy
-deploy: # Build all images and deploy them to GCP
-	@printf "$(GREEN)Switching to 'local' environment$(NO_COLOR)\n"
-	@make --no-print-directory make-init
+deploy: ## Build all images and deploy them to GCP
+	@printf "$(GREEN)Cleaning up old 'deployment-settings.env' file$(NO_COLOR)\n"
+	@"$(MAKE)" make-remove-deployment-settings
 	@printf "$(GREEN)Starting docker setup locally$(NO_COLOR)\n"
-	@make --no-print-directory docker-up
+	@"$(MAKE)" docker-compose-up
 	@printf "$(GREEN)Verifying that there are no changes in the secrets$(NO_COLOR)\n"
-	@make --no-print-directory gpg-init
-	@make --no-print-directory deployment-guard-secret-changes
+	@"$(MAKE)" gpg-init
+	@"$(MAKE)" deployment-guard-secret-changes
 	@printf "$(GREEN)Verifying that there are no uncommitted changes in the codebase$(NO_COLOR)\n"
-	@make --no-print-directory deployment-guard-uncommitted-changes
+	@"$(MAKE)" deployment-guard-uncommitted-changes
 	@printf "$(GREEN)Initializing gcloud deployment service account$(NO_COLOR)\n"
-	@make --no-print-directory gcp-init-deployment-account
-	@printf "$(GREEN)Switching to 'prod' environment$(NO_COLOR)\n"
-	@make --no-print-directory make-init ENVS="ENV=prod TAG=latest"
+	@"$(MAKE)" gcp-init-deployment-account
+	@printf "$(GREEN)Switching to 'prod' environment (via 'deployment-settings.env' file)$(NO_COLOR)\n"
+	@"$(MAKE)" make-init-deployment-settings ENVS="ENV=prod TAG=latest"
 	@printf "$(GREEN)Creating build information file$(NO_COLOR)\n"
-	@make --no-print-directory deployment-create-build-info-file
+	@"$(MAKE)" deployment-create-build-info-file
 	@printf "$(GREEN)Building docker images$(NO_COLOR)\n"
-	@make --no-print-directory docker-build
+	@"$(MAKE)" docker-compose-build
 	@printf "$(GREEN)Pushing images to the registry$(NO_COLOR)\n"
-	@make --no-print-directory docker-push
+	@"$(MAKE)" docker-compose-push
+	@printf "$(GREEN)Creating the service-ips file$(NO_COLOR)\n"
+	@"$(MAKE)" deployment-create-service-ip-file
 	@printf "$(GREEN)Creating the deployment archive$(NO_COLOR)\n"
-	@make deployment-create-tar
-	@printf "$(GREEN)Copying the deployment archive to the VM and run the deployment$(NO_COLOR)\n"
-	@make --no-print-directory deployment-run-on-vm
+	@"$(MAKE)" deployment-create-tar
+	@printf "$(GREEN)Copying the deployment archive to the VMs and run the deployment$(NO_COLOR)\n"
+	@"$(MAKE)" deployment-run-on-vms
 	@printf "$(GREEN)Clearing deployment archive$(NO_COLOR)\n"
-	@make --no-print-directory deployment-clear-tar
-	@printf "$(GREEN)Switching to 'local' environment$(NO_COLOR)\n"
-	@make --no-print-directory make-init
+	@"$(MAKE)" deployment-clear-tar
+	@printf "$(GREEN)Removing 'deployment-settings.env' file$(NO_COLOR)\n"
+	@"$(MAKE)" make-remove-deployment-settings
 
 # directory on the VM that will contain the files to start the docker setup
 CODEBASE_DIRECTORY=/tmp/codebase
@@ -74,6 +76,11 @@ deployment-create-build-info-file: ## Create a file containing version informati
 	@echo "------" >> ".build/build-info"
 	@git log -1 --no-color >> ".build/build-info"
 
+.PHONY: deployment-create-service-ip-file
+deployment-create-service-ip-file: ## Create a file containing the IPs of all services
+	@"$(MAKE)" -s gcp-get-ips > ".build/service-ips"
+	@sed -i "s/\r//g" ".build/service-ips"
+
 # create tar archive
 #  tar -czvf archive.tar.gz ./source
 #
@@ -88,15 +95,13 @@ deployment-create-tar:
 	rm -rf .build/deployment
 	mkdir -p .build/deployment
 	# copy the necessary files
-	mkdir -p .build/deployment/.docker/docker-compose/
-	cp -r .docker/docker-compose/ .build/deployment/.docker/
 	cp -r .make .build/deployment/
+	find .build/deployment -name '*.env' -delete
+	cp .make/variables.env .build/deployment/.make/variables.env
 	cp Makefile .build/deployment/
 	cp .infrastructure/scripts/deploy.sh .build/deployment/
-	# make sure we don't have any .env files in the build directory (don't wanna leak any secrets) ...
-	find .build/deployment -name '.env' -delete
-	# ... apart from the .env file we need to start docker
-	cp .secrets/prod/docker.env .build/deployment/.docker/.env
+	# move the ip services file
+	mv .build/service-ips .build/deployment/service-ips
 	# create the archive
 	tar -czvf .build/deployment.tar.gz -C .build/deployment/ ./
 
@@ -107,11 +112,50 @@ deployment-clear-tar:
 	# remove the archive
 	rm -rf .build/deployment.tar.gz
 
+.PHONY: deployment-run-on-vms
+deployment-run-on-vms: ## Run the deployment script on all VMs
+	"$(MAKE)" -j --output-sync=target	deployment-run-on-vm-application \
+ 				 						deployment-run-on-vm-php-fpm \
+ 				 						deployment-run-on-vm-php-worker \
+ 				 						deployment-run-on-vm-nginx
+
 .PHONY: deployment-run-on-vm
-deployment-run-on-vm:## Run the deployment script on the VM
+deployment-run-on-vm: ## Run the deployment script on the VM specified by VM_NAME for the service specified by DOCKER_SERVICE_NAME
+	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
 	"$(MAKE)" -s gcp-scp-command SOURCE=".build/deployment.tar.gz" DESTINATION="deployment.tar.gz"
-	"$(MAKE)" -s gcp-ssh-command COMMAND="sudo rm -rf $(CODEBASE_DIRECTORY) && sudo mkdir -p $(CODEBASE_DIRECTORY) && sudo tar -xzvf deployment.tar.gz -C $(CODEBASE_DIRECTORY) && cd $(CODEBASE_DIRECTORY) && sudo bash deploy.sh"
+	"$(MAKE)" -s gcp-ssh-command COMMAND="sudo rm -rf $(CODEBASE_DIRECTORY) && sudo mkdir -p $(CODEBASE_DIRECTORY) && sudo tar -xzvf deployment.tar.gz -C $(CODEBASE_DIRECTORY) && cd $(CODEBASE_DIRECTORY) && sudo bash deploy.sh $(DOCKER_SERVICE_NAME)"
+
+.PHONY: deployment-run-on-vm-application
+deployment-run-on-vm-application:
+	"$(MAKE)" deployment-run-on-vm VM_NAME=$(VM_NAME_APPLICATION) DOCKER_SERVICE_NAME=$(DOCKER_SERVICE_NAME_APPLICATION)
+
+.PHONY: deployment-run-on-vm-php-fpm
+deployment-run-on-vm-php-fpm:
+	"$(MAKE)" deployment-run-on-vm VM_NAME=$(VM_NAME_PHP_FPM) DOCKER_SERVICE_NAME=$(DOCKER_SERVICE_NAME_PHP_FPM)
+
+.PHONY: deployment-run-on-vm-php-worker 
+deployment-run-on-vm-php-worker:
+	"$(MAKE)" deployment-run-on-vm VM_NAME=$(VM_NAME_PHP_WORKER) DOCKER_SERVICE_NAME=$(DOCKER_SERVICE_NAME_PHP_WORKER)
+
+.PHONY: deployment-run-on-vm-nginx
+deployment-run-on-vm-nginx:
+	"$(MAKE)" deployment-run-on-vm VM_NAME=$(VM_NAME_NGINX) DOCKER_SERVICE_NAME=$(DOCKER_SERVICE_NAME_NGINX)
 
 .PHONY: deployment-setup-db-on-vm
 deployment-setup-db-on-vm: ## Setup the application on the VM. CAUTION: The docker setup must be running!
-	"$(MAKE)" -s gcp-docker-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="make setup-db"
+	"$(MAKE)" -s gcp-docker-exec VM_NAME="$(VM_NAME_APPLICATION)" DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_APPLICATION)" DOCKER_COMMAND="php artisan app:setup-db"
+
+.PHONY: deployment-info
+deployment-info: ## Print information about the deployed containers	
+	@for vm_name_service_name in $(ALL_VM_SERVICE_NAMES); do \
+  		vm_name=`echo $$vm_name_service_name | cut -d ":" -f 1`; \
+  		service_name=`echo $$vm_name_service_name | cut -d ":" -f 2`; \
+  		printf "$(GREEN)$$service_name:$(NO_COLOR)\n"; \
+		make -s gcp-ssh-command VM_NAME="$$vm_name" COMMAND="sudo docker ps"; \
+		if [ "$$service_name" != "$(DOCKER_SERVICE_NAME_NGINX)" ]; then \
+			make -s gcp-docker-exec VM_NAME="$$vm_name" DOCKER_SERVICE_NAME="$$service_name" DOCKER_COMMAND="cat build-info"; \
+		fi; \
+  		printf "\n\n"; \
+  	done; \
+  	public_ip=$$(make -s gcp-get-public-ip-vm VM_NAME=$(VM_NAME_NGINX)); \
+  	echo "Visit the UI at: http://$$public_ip/";

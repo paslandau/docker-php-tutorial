@@ -3,7 +3,7 @@
 # @see https://stackoverflow.com/a/3474556/413531
 set -e
 
-make docker-down ENV=ci || true
+make docker-compose-down ENV=ci || true
 
 start_total=$(date +%s)
 
@@ -18,13 +18,13 @@ cat /etc/*-release || true
 # SETUP DOCKER
 make make-init ENVS="ENV=ci TAG=latest EXECUTE_IN_CONTAINER=true GPG_PASSWORD=12345678"
 start_docker_build=$(date +%s)
-make docker-build
+make docker-compose-build
 end_docker_build=$(date +%s)
 mkdir -p .build && chmod 777 .build
       
 # START DOCKER
 start_docker_up=$(date +%s)
-make docker-up
+make docker-compose-up
 end_docker_up=$(date +%s)
 make gpg-init
 make secret-decrypt-with-password
@@ -59,7 +59,7 @@ echo "Total:               " `expr $end_total - $start_total`
 # CLEANUP
 # reset the default make variables
 make make-init
-make docker-down ENV=ci || true
+make docker-compose-down ENV=ci || true
   
 # EVALUATE RESULTS
 if [ "$FAILED" == "true" ]; then echo "FAILED"; exit 1; fi

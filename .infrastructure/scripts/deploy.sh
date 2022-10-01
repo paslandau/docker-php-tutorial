@@ -7,13 +7,13 @@ usage="Usage: deploy.sh docker_service_name"
 
 docker_service_name=$1
 
+echo "Initializing the codebase"
+make make-init ENVS="ENV=prod TAG=latest"
 echo "Retrieving secrets"
 make gcp-secret-get SECRET_NAME=GPG_KEY > secret.gpg
 GPG_PASSWORD=$(make gcp-secret-get SECRET_NAME=GPG_PASSWORD)
 echo "Creating compose-secrets.env file"
 echo "GPG_PASSWORD=$GPG_PASSWORD" > compose-secrets.env
-echo "Initializing the codebase"
-make make-init ENVS="ENV=prod TAG=latest"
 echo "Pulling image for '${docker_service_name}' on the VM from the registry"
 make docker-pull DOCKER_SERVICE_NAME="${docker_service_name}"
 echo "Stop the '${docker_service_name}' container on the VM"

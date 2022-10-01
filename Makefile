@@ -40,10 +40,18 @@ MAKEFLAGS += --warn-undefined-variables
 # remove some "magic make behavior"
 MAKEFLAGS += --no-builtin-rules
 
+# don't print directory information by default
+# @see https://stackoverflow.com/a/8080887
+ifndef VERBOSE
+MAKEFLAGS += --no-print-directory
+endif
+
 # include the default variables
 include .make/variables.env
 # include the current environment settings
 -include .make/.env
+# include the deployment environment settings
+-include .make/deployment-settings.env
 
 # set default values for ENV and TAG to suppress "warning: undefined variable" when .make/.env does not exist yet
 ENV?=
@@ -81,7 +89,7 @@ help:
 
 ENVS?=ENV=local TAG=latest
 .PHONY: make-init
-make-init: ## Initializes the local .makefile/.env file with ENV variables for make. Use via ENVS="KEY_1=value1 KEY_2=value2"
+make-init: ## Initializes the local `.make/.env` file with ENV variables for make. Use via ENVS="KEY_1=value1 KEY_2=value2"
 	@$(if $(ENVS),,$(error ENVS is undefined))
 	@rm -f .make/.env
 	@for variable in $(ENVS); do \
@@ -89,3 +97,13 @@ make-init: ## Initializes the local .makefile/.env file with ENV variables for m
 	done
 	@echo "Created a local .make/.env file"
 
+.PHONY: make-init-deployment-settings
+make-init-deployment-settings: ## Create a `deployment-settings.env` file to ensure that no local-only variables are affecting the deployment. Use via ENVS="KEY_1=value1 KEY_2=value2"
+	@cp .make/variables.env .make/deployment-settings.env
+	@for variable in $(ENVS); do \
+	  echo $$variable | tee -a .make/deployment-settings.env > /dev/null 2>&1; \
+	done
+
+.PHONY: make-remove-deployment-settings
+make-remove-deployment-settings: ## Remove the `deployment-settings.env` file 
+	@rm -f .make/deployment-settings.env

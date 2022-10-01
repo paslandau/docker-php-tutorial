@@ -42,13 +42,13 @@ QA and Tests:
     # Pass default values to the make-init command - otherwise we would have to pass those as arguments to every make call
     - make make-init ENVS="ENV=ci TAG=latest EXECUTE_IN_CONTAINER=true GPG_PASSWORD=$GPG_PASSWORD"
     - start_docker_build=$(date +%s)
-    - make docker-build
+    - make docker-compose-build
     - end_docker_build=$(date +%s)
     - mkdir .build && chmod 777 .build
       
     ## START DOCKER
     - start_docker_up=$(date +%s)
-    - make docker-up
+    - make docker-compose-up
     - end_docker_up=$(date +%s)
     - make gpg-init
     - make secret-decrypt-with-password

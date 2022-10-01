@@ -38,19 +38,19 @@ infrastructure-setup-all-vms: ## Setup all VMs
 
 .PHONY: infrastructure-setup-vm-application
 infrastructure-setup-vm-application:
-	"$(MAKE)" --no-print-directory infrastructure-setup-vm VM_NAME=$(VM_NAME_APPLICATION)
+	"$(MAKE)" infrastructure-setup-vm VM_NAME=$(VM_NAME_APPLICATION)
 
 .PHONY: infrastructure-setup-vm-php-fpm
 infrastructure-setup-vm-php-fpm:
-	"$(MAKE)" --no-print-directory infrastructure-setup-vm VM_NAME=$(VM_NAME_PHP_FPM)
+	"$(MAKE)" infrastructure-setup-vm VM_NAME=$(VM_NAME_PHP_FPM)
 
 .PHONY: infrastructure-setup-vm-php-worker
 infrastructure-setup-vm-php-worker:
-	"$(MAKE)" --no-print-directory infrastructure-setup-vm VM_NAME=$(VM_NAME_PHP_WORKER)
+	"$(MAKE)" infrastructure-setup-vm VM_NAME=$(VM_NAME_PHP_WORKER)
 
 .PHONY: infrastructure-setup-vm-nginx
 infrastructure-setup-vm-nginx:
-	"$(MAKE)" --no-print-directory infrastructure-setup-vm VM_NAME=$(VM_NAME_NGINX) ARGS="enable_public_access"
+	"$(MAKE)" infrastructure-setup-vm VM_NAME=$(VM_NAME_NGINX) ARGS="enable_public_access"
 
 # Provisioninig
 
@@ -71,29 +71,29 @@ infrastructure-provision-all: ## Provision all VMs
 
 .PHONY: infrastructure-provision-vm-application
 infrastructure-provision-vm-application:
-	"$(MAKE)" --no-print-directory infrastructure-provision-vm VM_NAME=$(VM_NAME_APPLICATION)
+	"$(MAKE)" infrastructure-provision-vm VM_NAME=$(VM_NAME_APPLICATION)
 
 .PHONY: infrastructure-provision-vm-php-fpm
 infrastructure-provision-vm-php-fpm:
-	"$(MAKE)" --no-print-directory infrastructure-provision-vm VM_NAME=$(VM_NAME_PHP_FPM)
+	"$(MAKE)" infrastructure-provision-vm VM_NAME=$(VM_NAME_PHP_FPM)
 
 .PHONY: infrastructure-provision-vm-php-worker
 infrastructure-provision-vm-php-worker:
-	"$(MAKE)" --no-print-directory infrastructure-provision-vm VM_NAME=$(VM_NAME_PHP_WORKER)
+	"$(MAKE)" infrastructure-provision-vm VM_NAME=$(VM_NAME_PHP_WORKER)
 
 .PHONY: infrastructure-provision-vm-nginx
 infrastructure-provision-vm-nginx:
-	"$(MAKE)" --no-print-directory infrastructure-provision-vm VM_NAME=$(VM_NAME_NGINX)
+	"$(MAKE)" infrastructure-provision-vm VM_NAME=$(VM_NAME_NGINX)
 
 # Misc
 
 .PHONY: infrastructure-info
 infrastructure-info: ## Print information about the infrastructure	
-	@"$(MAKE)" -s --no-print-directory gcp-info-vms
+	@"$(MAKE)" -s gcp-info-vms
 	@echo ""
-	@"$(MAKE)" -s --no-print-directory gcp-info-redis
+	@"$(MAKE)" -s gcp-info-redis
 	@echo ""
-	@"$(MAKE)" -s --no-print-directory gcp-info-mysql
+	@"$(MAKE)" -s gcp-info-mysql
 
 ## TODO Problem: Output is not synchronized
 ## Uses "&" to start job in the background for parallelization

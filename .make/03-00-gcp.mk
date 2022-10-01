@@ -51,17 +51,59 @@ gcp-secret-get: ## Retrieve and print the secret $(SECRET_NAME) in version $(SEC
 	@$(if $(SECRET_VERSION),,$(error "SECRET_VERSION is undefined"))
 	@gcloud secrets versions access $(SECRET_VERSION) --secret=$(SECRET_NAME)
 
-.PHONY: gcp-docker-exec
-gcp-docker-exec: ## Run a command in a docker container vid compose on the VM. Usage: `make gcp-docker-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
+.PHONY: gcp-docker-compose-exec
+gcp-docker-compose-exec: ## Run a command in a docker container vid compose on the VM. Usage: `make gcp-docker-compose-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
 	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
 	@$(if $(DOCKER_COMMAND),,$(error "DOCKER_COMMAND is undefined"))
-	"$(MAKE)" -s gcp-ssh-command COMMAND="cd $(CODEBASE_DIRECTORY) && sudo make docker-exec DOCKER_SERVICE_NAME='$(DOCKER_SERVICE_NAME)' DOCKER_COMMAND='$(DOCKER_COMMAND)'"
+	"$(MAKE)" -s gcp-ssh-command COMMAND="cd $(CODEBASE_DIRECTORY) && sudo make docker-compose-exec DOCKER_SERVICE_NAME='$(DOCKER_SERVICE_NAME)' DOCKER_COMMAND='$(DOCKER_COMMAND)'"
+
+.PHONY: gcp-docker-exec
+gcp-docker-exec: ## Run a command in a docker container on the VM. Usage: `make gcp-docker-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
+	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
+	@$(if $(DOCKER_COMMAND),,$(error "DOCKER_COMMAND is undefined"))
+	"$(MAKE)" -s gcp-ssh-command COMMAND="cd $(CODEBASE_DIRECTORY) && sudo docker exec $(DOCKER_SERVICE_NAME) $(DOCKER_COMMAND)"
+
+# Retrieve IPs 
+
+.PHONY: gcp-get-ips
+gcp-get-ips: ## Get the IP addresses for all services
+	@printf "$(DOCKER_SERVICE_NAME_MYSQL):"
+	@"$(MAKE)" -s gcp-get-private-ip-mysql
+	@printf "$(DOCKER_SERVICE_NAME_REDIS):"
+	@"$(MAKE)" -s gcp-get-private-ip-redis
+	@for vm_name_service_name in $(ALL_VM_SERVICE_NAMES); do \
+  		vm_name=`echo $$vm_name_service_name | cut -d ":" -f 1`; \
+  		service_name=`echo $$vm_name_service_name | cut -d ":" -f 2`; \
+  		printf "$$service_name:"; \
+  		make -s gcp-get-private-ip-vm VM_NAME=$$vm_name; \
+  	  done;
+
+# @see https://cloud.google.com/compute/docs/instances/view-ip-address
+.PHONY: gcp-get-public-ip-vm
+gcp-get-public-ip-vm: ## Get the public ip of a VM
+	@$(if $(GCP_PROJECT_ID),,$(error "GCP_PROJECT_ID is undefined"))
+	@$(if $(VM_NAME),,$(error "VM_NAME is undefined"))
+	gcloud compute instances describe $(VM_NAME) --format="get(networkInterfaces[0].accessConfigs[0].natIP)" --project=$(GCP_PROJECT_ID) --zone=$(GCP_ZONE)
+
+.PHONY: gcp-get-private-ip-vm
+gcp-get-private-ip-vm: ## Get the private ip of a VM
+	@$(if $(GCP_PROJECT_ID),,$(error "GCP_PROJECT_ID is undefined"))
+	@$(if $(VM_NAME),,$(error "VM_NAME is undefined"))
+	gcloud compute instances describe $(VM_NAME) --format="get(networkInterfaces[0].networkIP)" --project=$(GCP_PROJECT_ID) --zone=$(GCP_ZONE)
+
+.PHONY: gcp-get-private-ip-mysql
+gcp-get-private-ip-mysql: ## Get the private IP address of the SQL service
+	gcloud sql instances describe $(VM_NAME_MYSQL) --format="get(ipAddresses[0].ipAddress)" --project=$(GCP_PROJECT_ID)
+
+.PHONY: gcp-get-private-ip-redis
+gcp-get-private-ip-redis: ## Get the private IP address of the Redis service
+	gcloud redis instances describe $(VM_NAME_REDIS) --format="get(host)" --project=$(GCP_PROJECT_ID) --region=$(GCP_REGION)
 
 # see https://cloud.google.com/memorystore/docs/redis/auth-overview#auth_behavior
 # see https://cloud.google.com/memorystore/docs/redis/managing-auth#getting_the_auth_string
 .PHONY: gcp-get-redis-auth
 gcp-get-redis-auth: ## Get the AUTH string of the Redis service
-	gcloud redis instances get-auth-string $(VM_NAME_REDIS) --project=$(GCP_PROJECT_ID) --region=$(GCP_REGION)
+	gcloud redis instances get-auth-string $(VM_NAME_REDIS) --project=$(GCP_PROJECT_ID) --region=$(GCP_REGION) | cut -d " " -f 2
 
 .PHONY: gcp-info-redis
 gcp-info-redis: ## Show redis information
