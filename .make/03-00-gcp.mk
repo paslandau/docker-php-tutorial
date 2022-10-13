@@ -84,17 +84,20 @@ gcp-secret-get: ## Retrieve and print the secret $(SECRET_NAME) in version $(SEC
 	@$(if $(SECRET_VERSION),,$(error "SECRET_VERSION is undefined"))
 	@$(GCLOUD) secrets versions access $(SECRET_VERSION) --secret=$(SECRET_NAME)
 
+DOCKER_USERNAME?=root
 .PHONY: gcp-docker-compose-exec
-gcp-docker-compose-exec: ## Run a command in a docker container vid compose on the VM. Usage: `make gcp-docker-compose-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
+gcp-docker-compose-exec: ## Run a command in a docker container vid compose on the VM. Usage: `make gcp-docker-compose-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"` 
 	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
 	@$(if $(DOCKER_COMMAND),,$(error "DOCKER_COMMAND is undefined"))
-	"$(MAKE)" -s gcp-ssh-command COMMAND="cd $(CODEBASE_DIRECTORY) && sudo make docker-compose-exec DOCKER_SERVICE_NAME='$(DOCKER_SERVICE_NAME)' DOCKER_COMMAND='$(DOCKER_COMMAND)'"
+	@$(if $(DOCKER_USERNAME),,$(error "DOCKER_USERNAME is undefined"))
+	"$(MAKE)" -s gcp-ssh-command COMMAND="cd $(CODEBASE_DIRECTORY) && sudo make docker-compose-exec DOCKER_USERNAME='$(DOCKER_USERNAME)' DOCKER_SERVICE_NAME='$(DOCKER_SERVICE_NAME)' DOCKER_COMMAND='$(DOCKER_COMMAND)'"
 
 .PHONY: gcp-docker-exec
-gcp-docker-exec: ## Run a command in a docker container on the VM. Usage: `make gcp-docker-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
+gcp-docker-exec: ## Run a command in a docker container on the VM. Usage: `make gcp-docker-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"` DOCKER_USERNAME=root
 	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
 	@$(if $(DOCKER_COMMAND),,$(error "DOCKER_COMMAND is undefined"))
-	"$(MAKE)" -s gcp-ssh-command COMMAND="cd $(CODEBASE_DIRECTORY) && sudo docker exec $(DOCKER_SERVICE_NAME) $(DOCKER_COMMAND)"
+	@$(if $(DOCKER_USERNAME),,$(error "DOCKER_USERNAME is undefined"))
+	"$(MAKE)" -s gcp-ssh-command COMMAND="cd $(CODEBASE_DIRECTORY) && sudo docker exec --user $(DOCKER_USERNAME) $(DOCKER_SERVICE_NAME) $(DOCKER_COMMAND)"
 
 # Retrieve IPs 
 

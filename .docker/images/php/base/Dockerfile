@@ -83,6 +83,10 @@ COPY ./.docker/images/php/base/.bashrc /root/.bashrc
 
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
+# create the application log directory and set the correct permissions
+RUN mkdir -p /var/log/app/ \
+    && chown $APP_USER_NAME:$APP_GROUP_NAME /var/log/app/
+
 # Fix git permission issue:
 # `git` introduced a security feature to throw an error if the parent directory 
 # of the `.git` directory is owned by another user.

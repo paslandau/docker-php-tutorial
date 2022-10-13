@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Psr\Log\LoggerInterface;
 
 class InsertInDbJob implements ShouldQueue
 {
@@ -19,8 +20,9 @@ class InsertInDbJob implements ShouldQueue
     ) {
     }
 
-    public function handle(DatabaseManager $databaseManager): void
+    public function handle(DatabaseManager $databaseManager, LoggerInterface $logger): void
     {
+        $logger->info("Inserting a job '{$this->jobId}'");
         $databaseManager->insert("INSERT INTO `jobs`(value) VALUES(?)", [$this->jobId]);
     }
 }

@@ -145,7 +145,7 @@ deployment-run-on-vm-nginx:
 
 .PHONY: deployment-setup-db-on-vm
 deployment-setup-db-on-vm: ## Setup the application on the VM. CAUTION: The docker setup must be running!
-	"$(MAKE)" -s gcp-docker-exec VM_NAME="$(VM_NAME_APPLICATION)" DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_APPLICATION)" DOCKER_COMMAND="php artisan app:setup-db"
+	"$(MAKE)" -s gcp-docker-exec VM_NAME="$(VM_NAME_APPLICATION)" DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_APPLICATION)" DOCKER_COMMAND="php artisan app:setup-db" DOCKER_USERNAME=$(APP_USER_NAME)
 
 .PHONY: deployment-info
 deployment-info: ## Print information about the deployed containers	

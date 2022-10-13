@@ -1,0 +1,5 @@
+# supervisord.log   (see .docker/images/php/worker/supervisor/supervisord.conf at [supervisord].logfile)
+# worker-stdout.log (see .docker/images/php/worker/supervisor/supervisord.conf at [program:worker].stdout_logfile)
+# worker-stderr.log (see .docker/images/php/worker/supervisor/supervisord.conf at [program:worker].stderr_logfile)
+/var/log/supervisor/*.log {
+}

@@ -1,0 +1,4 @@
+# access.log (see .docker/images/php/fpm/php-fpm.d/www.conf at [www].access.log)
+# error.log  (see .docker/images/php/fpm/php-fpm.d/www.conf at error_log)
+/var/log/php-fpm/*.log {
+}

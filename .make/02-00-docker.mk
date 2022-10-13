@@ -115,6 +115,10 @@ docker-compose-up: validate-docker-compose-variables ## Create and start all doc
 docker-compose-down: validate-docker-compose-variables ## Stop and remove all docker containers.
 	@$(DOCKER_COMPOSE) down
 
+.PHONY: docker-compose-restart
+docker-compose-restart: validate-docker-compose-variables ## Restart all docker containers.
+	@$(DOCKER_COMPOSE) restart
+
 .PHONY: docker-compose-config
 docker-compose-config: validate-docker-compose-variables ## List the configuration
 	@$(DOCKER_COMPOSE) config
@@ -127,11 +131,13 @@ docker-compose-push: validate-docker-compose-variables ## Push all docker images
 docker-compose-pull: validate-docker-compose-variables ## Pull all docker images from the remote repository
 	$(DOCKER_COMPOSE) pull $(ARGS)
 
+DOCKER_USERNAME?=root
 .PHONY: docker-compose-exec
-docker-compose-exec: validate-docker-compose-variables ## Execute a command in a docker container. Usage: `make docker-compose-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!'"`
+docker-compose-exec: validate-docker-compose-variables ## Execute a command in a docker container. Usage: `make docker-compose-exec DOCKER_SERVICE_NAME="application" DOCKER_COMMAND="echo 'Hello world!' DOCKER_USERNAME=root"`
 	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
 	@$(if $(DOCKER_COMMAND),,$(error "DOCKER_COMMAND is undefined"))
-	$(DOCKER_COMPOSE) exec -T $(DOCKER_SERVICE_NAME) $(DOCKER_COMMAND)
+	@$(if $(DOCKER_USERNAME),,$(error "DOCKER_USERNAME is undefined"))
+	$(DOCKER_COMPOSE) exec -T --user $(DOCKER_USERNAME) $(DOCKER_SERVICE_NAME) $(DOCKER_COMMAND)
 
 # `docker build` and `docker compose build` are behaving differently
 # @see https://github.com/docker/compose/issues/9508
@@ -178,21 +184,35 @@ docker-run: validate-docker-variables ## Start a single docker container
 				$(DOCKER_SERVICE_OPTIONS) \
 				$(DOCKER_REGISTRY)/$(DOCKER_NAMESPACE)/$(DOCKER_SERVICE_NAME)-$(ENV):$(TAG)
 
+
+# see scripts in .docker/images/logger/logrotate.d for a documentation of the paths of the log volumes
+.PHONY: docker-run-logger
+docker-run-logger: validate-docker-variables ## Start a logger sidecar container
+	docker run 	--name $(DOCKER_SERVICE_NAME_LOGGER) \
+				-d \
+				-it \
+				-v logs-cron:/var/log/cron \
+				-v logs-nginx:/var/log/nginx \
+				-v logs-app:/var/log/app \
+				-v logs-supervisor:/var/log/supervisor \
+				-v logs-php-fpm:/var/log/php-fpm \
+				$(DOCKER_REGISTRY)/$(DOCKER_NAMESPACE)/$(DOCKER_SERVICE_NAME_LOGGER)-$(ENV):$(TAG)
+
 .PHONY: docker-run-nginx
 docker-run-nginx: ## Start the nginx container
-	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_NGINX)" DOCKER_SERVICE_OPTIONS="-p 80:80 -p 443:443"
+	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_NGINX)" DOCKER_SERVICE_OPTIONS="-v logs-nginx:/var/log/nginx -p 80:80 -p 443:443"
 
 .PHONY: docker-run-php-fpm
 docker-run-php-fpm: ## Start the php-fpm container
-	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_PHP_FPM)" DOCKER_SERVICE_OPTIONS="-p 9000:9000"
+	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_PHP_FPM)" DOCKER_SERVICE_OPTIONS="-v logs-app:/var/log/app -v logs-php-fpm:/var/log/php-fpm -p 9000:9000"
 
 .PHONY: docker-run-application
 docker-run-application: ## Start the application container
-	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_APPLICATION)" DOCKER_SERVICE_OPTIONS=""
+	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_APPLICATION)" DOCKER_SERVICE_OPTIONS="-v logs-app:/var/log/app"
 
 .PHONY: docker-run-php-worker
 docker-run-php-worker: ## Start the php-worker container
-	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_PHP_WORKER)" DOCKER_SERVICE_OPTIONS=""
+	"$(MAKE)" docker-run DOCKER_SERVICE_NAME="$(DOCKER_SERVICE_NAME_PHP_WORKER)" DOCKER_SERVICE_OPTIONS="-v logs-app:/var/log/app -v logs-supervisor:/var/log/supervisor"
 
 .PHONY: docker-stop
 docker-stop: validate-docker-variables ## Stop a single docker container

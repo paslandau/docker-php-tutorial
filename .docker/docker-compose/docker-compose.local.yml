@@ -1,11 +1,27 @@
 version: '3.7'
 
+volumes:
+  logs-nginx:
+    name: logs-nginx-${ENV?}
+    driver: ${VOLUMES_DRIVER?}
+  logs-app:
+    name: logs-app-${ENV?}
+    driver: ${VOLUMES_DRIVER?}
+  logs-supervisor:
+    name: logs-supervisor-${ENV?}
+    driver: ${VOLUMES_DRIVER?}
+  logs-php-fpm:
+    name: logs-php-fpm-${ENV?}
+    driver: ${VOLUMES_DRIVER?}
+
 services:
   php-fpm:
     environment:
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
     volumes:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+      - logs-app:/var/log/app
+      - logs-php-fpm:/var/log/php-fpm
     # cap_add and security_opt are required to enable strace
     # @see https://stackoverflow.com/a/46676868
     cap_add:
@@ -22,6 +38,8 @@ services:
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
     volumes:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+      - logs-app:/var/log/app
+      - logs-supervisor:/var/log/supervisor
     # cap_add and security_opt are required to enable strace
     # @see https://stackoverflow.com/a/46676868
     cap_add:
@@ -32,6 +50,8 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - network
+    depends_on:
+      - php-fpm    
 
   nginx:
     ports:
@@ -41,10 +61,11 @@ services:
       network:
         aliases:
           - ${APP_HOST?}
-    depends_on:
-      - php-fpm    
     volumes:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+      - logs-nginx:/var/log/nginx
+    depends_on:
+      - redis
 
   application:
     build:
@@ -60,6 +81,7 @@ services:
       - "seccomp=unconfined"
     volumes:
       - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+      - logs-app:/var/log/app
     ports:
       - "${APPLICATION_SSH_HOST_PORT:-2222}:22"
     extra_hosts:
@@ -76,3 +98,10 @@ services:
       - "${REDIS_HOST_PORT:-6379}:6379"
     volumes:
       - redis:/data
+
+  logger:
+    volumes:
+      - logs-nginx:/var/log/nginx
+      - logs-app:/var/log/app
+      - logs-supervisor:/var/log/supervisor
+      - logs-php-fpm:/var/log/php-fpm

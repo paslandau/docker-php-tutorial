@@ -69,6 +69,7 @@ available containing all videos of the tutorial series.
 - [Create a production infrastructure for dockerized PHP Apps on GCP](#create-a-production-infrastructure-for-dockerized-php-apps-on-gcp)
 - [Deploy dockerized PHP Apps to production](#deploy-dockerized-php-apps-to-production)
 - [Use the `gcloud` cli docker image instead of installing it locally](#use-the-gcloud-cli-docker-image-instead-of-installing-it-locally)
+- [Manage Logfiles in Docker via Volumes and Sidecar containers](#manage-logfiles-in-docker-via-volumes-and-sidecar-containers)
 
 ### Planned (already used by us but not put into writing):
 
@@ -223,8 +224,13 @@ run it via "plain" `docker` (without `compose`).
 Replace the locally installed `gcloud` cli tool with the official `gcloud` cli docker image and 
 integrate it in the setup and deployment process.
 
-### Scaling Dockerized PHP Applications with Terraform and Kubernetes on GCP/AWS
+### Manage Logfiles in Docker via Volumes and Sidecar containers
 
-- Status: Dream Caused by the Flight of a Bee Around a Pomegranate a Second Before Awakening
-- Link:
-- Branch: 
+- Status: published ✓
+- Link: https://www.pascallandau.com/blog/manage-log-files-in-docker-via-volumes-and-sidecar-containers-with-cron-jobs-and-logrotate/
+- Branch:
+  [Part 13](https://github.com/paslandau/docker-php-tutorial/tree/part-13-manage-log-files-in-docker-via-volumes-and-sidecar-containers-with-cron-jobs-and-logrotate)
+
+Implement the sidecar pattern to manage the  various log files of our dockerized application via 
+`logrotate` and `cron`.
+

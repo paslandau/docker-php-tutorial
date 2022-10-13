@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Queue\RedisQueue;
 use Illuminate\Routing\Controller;
+use Psr\Log\LoggerInterface;
 use Redis;
 
 class HomeController extends Controller
@@ -21,8 +22,10 @@ class HomeController extends Controller
     {
     }
 
-    public function __invoke(Request $request, QueueManager $queueManager, DatabaseManager $databaseManager): View
+    public function __invoke(Request $request, QueueManager $queueManager, DatabaseManager $databaseManager, LoggerInterface $logger): View
     {
+        $logger->info("Handling HTTP request: ".$request->getUri());
+        
         /**
          * @var string|null $jobId
          */

@@ -1,0 +1,4 @@
+# cron.log          (see .docker/images/logger/Dockerfile at CMD "-L")
+# cron-output.log   (see .docker/images/logger/Dockerfile at $PATH_TO_CRON_LOG)
+/var/log/cron/*.log {
+}

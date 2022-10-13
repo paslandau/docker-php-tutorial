@@ -1,6 +1,8 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE} as base
 
+ENV SERVICE_NAME=php-fpm
+
 RUN echo ${TARGET_PHP_VERSION}
 RUN apk add --no-cache --update \
         php-fpm~=$TARGET_PHP_VERSION \
@@ -11,7 +13,10 @@ COPY ./images/php/fpm/php-fpm.d/ /etc/php8/php-fpm.d/
 COPY ./images/php/fpm/conf.d/zz-app-fpm.ini /etc/php8/conf.d/
 
 RUN sed -i "s/__APP_USER_NAME/$APP_USER_NAME/" /etc/php8/php-fpm.d/* \
-    && sed -i "s/__APP_GROUP_NAME/$APP_GROUP_NAME/" /etc/php8/php-fpm.d/*
+    && sed -i "s/__APP_GROUP_NAME/$APP_GROUP_NAME/" /etc/php8/php-fpm.d/* \
+    && mkdir -p /var/log/php-fpm/ \
+    && rm -rf /var/log/php-fpm/* \
+    && chown $APP_USER_NAME:$APP_GROUP_NAME /var/log/php-fpm/
 
 USER $APP_USER_NAME
 

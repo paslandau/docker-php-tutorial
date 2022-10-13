@@ -1,0 +1,4 @@
+# access.log (see .docker/images/nginx/nginx.conf at http.access_log)
+# error.log  (see .docker/images/nginx/nginx.conf at http.error_log)
+/var/log/nginx/*.log {
+}

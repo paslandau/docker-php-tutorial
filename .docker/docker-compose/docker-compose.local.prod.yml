@@ -30,3 +30,12 @@ services:
       args:
         - NGINX_VERSION=${NGINX_VERSION?}
         - APP_CODE_PATH=${APP_CODE_PATH_CONTAINER?}
+
+  logger:
+    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/logger-${ENV?}:${TAG?}
+    build:
+      context: ../images/logger/
+      dockerfile: Dockerfile
+      args:
+        - ALPINE_VERSION=${ALPINE_VERSION?}
+      target: ${ENV?}

@@ -1,0 +1,5 @@
+# application.log   (see config/logging.php at channels.single.path)
+# cron.log          (see .docker/images/php/application/Dockerfile at CMD "-L")
+# cron-output.log   (see .docker/images/php/application/Dockerfile at $PATH_TO_CRON_OUTPUT_LOG)
+/var/log/app/*.log {
+}

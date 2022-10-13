@@ -1,9 +1,22 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE} as base
 
+ENV SERVICE_NAME=application
+
 FROM base as prod
 
-USER $APP_USER_NAME
+RUN    apk add --update apk-cron \
+    && rm -rf /etc/periodic/*  \
+              /etc/crontabs/root \
+              /var/cache/apk/*
+
+ARG PATH_TO_CRON_OUTPUT_LOG=/var/log/app/cron-output.log
+RUN echo "*  *  *  *  * $(which php) ${APP_CODE_PATH}/artisan schedule:run >> ${PATH_TO_CRON_OUTPUT_LOG} 2>&1" > /etc/crontabs/$APP_USER_NAME
+
+# -l: Log level 2 (= everything, according to https://unix.stackexchange.com/a/414010)
+# -f: foreground
+# -L: Path to cron logfile
+CMD [ "crond", "-l", "2", "-f", "-L", "/var/log/app/cron.log" ]
 
 FROM base as ci
 

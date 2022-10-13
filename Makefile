@@ -29,7 +29,7 @@ ifeq ($(OS),Windows_NT)
 	# (the export does only apply locally to `make` and the scripts that are invoked,
 	# it does not affect the global environment)
     # @see http://www.pascallandau.com/blog/setting-up-git-bash-mingw-msys2-on-windows/#fixing-the-path-conversion-issue-for-mingw-msys2
-		export MSYS_NO_PATHCONV=1
+	export MSYS_NO_PATHCONV=1
 else ifeq ($(OS),Darwin)
     # On Mac, the -T must be omitted to avoid cluttered output
     # @see https://github.com/moby/moby/issues/37366#issuecomment-401157643
