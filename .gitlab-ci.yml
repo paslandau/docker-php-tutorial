@@ -6,7 +6,7 @@ QA and Tests:
   
   rules:
     # automatically run for pull request and for pushes to branch "part-7-ci-pipeline-docker-php-gitlab-github"
-    - if: '($CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "part-7-ci-pipeline-docker-php-gitlab-github")'
+    - if: '($CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "part-7-ci-pipeline-docker-php-gitlab-github" || $CI_COMMIT_BRANCH =~ /^TEST__/)'
   
   # see https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-in-docker
   # for using Gitlab pipelines to build and run docker images
@@ -20,6 +20,7 @@ QA and Tests:
     
     ## STORE GPG KEY
     - cp $GPG_KEY_FILE ./secret.gpg
+    - echo "GPG_PASSWORD=$GPG_PASSWORD" > ./docker-run-secrets.env
     
     ## SETUP TOOLS
     - start_install_tools=$(date +%s)
@@ -40,18 +41,16 @@ QA and Tests:
     
     ## SETUP DOCKER
     # Pass default values to the make-init command - otherwise we would have to pass those as arguments to every make call
-    - make make-init ENVS="ENV=ci TAG=latest EXECUTE_IN_CONTAINER=true GPG_PASSWORD=$GPG_PASSWORD"
+    - make make-init ENVS="ENV=ci EXECUTE_IN_CONTAINER=true"
+    - make docker-compose-init
     - start_docker_build=$(date +%s)
     - make docker-compose-build
     - end_docker_build=$(date +%s)
-    - mkdir .build && chmod 777 .build
       
     ## START DOCKER
     - start_docker_up=$(date +%s)
     - make docker-compose-up
     - end_docker_up=$(date +%s)
-    - make gpg-init
-    - make secret-decrypt-with-password
     
     ## QA
     # Run the tests and qa tools but only store the error instead of failing immediately

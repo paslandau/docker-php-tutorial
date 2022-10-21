@@ -56,7 +56,7 @@ dev-verify-compose-version: ## Verify, that docker uses compose version >= v2.5
 # see https://stackoverflow.com/a/677212/413531
 .PHONY: dev-verify-tools
 dev-verify-tools: ## Verify, that the necessary tools exist locally
-	@tools="docker bash sed tar"; \
+	@tools="docker bash git grep sed tar"; \
 	for tool in $$tools; do \
 		command -v $$tool >/dev/null 2>&1 || { printf "$(RED)Command '$$tool' not found$(NO_COLOR)\n"; exit 1; } \
 	done;

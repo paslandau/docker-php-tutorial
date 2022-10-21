@@ -9,7 +9,6 @@ function info(){
 }
 
 info "Building the docker setup"
-make make-init
 make docker-compose-build
 
 info "Starting the docker setup"

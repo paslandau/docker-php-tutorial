@@ -65,10 +65,6 @@ include .make/variables.env
 # include the deployment environment settings
 -include .make/deployment-settings.env
 
-# set default values for ENV and TAG to suppress "warning: undefined variable" when .make/.env does not exist yet
-ENV?=
-TAG?=
-
 # Common variable to pass arbitrary options to targets
 ARGS?= 
 
@@ -80,6 +76,18 @@ NO_COLOR:=\033[0m
 
 # @see https://www.thapaliya.com/en/writings/well-documented-makefiles/
 .DEFAULT_GOAL:=help
+
+# Define a helper container invocation for linux utilities to ensure commands like "sed" 
+# can be invoked uniformely across different OS
+# @see https://stackoverflow.com/a/19457213/413531 for a description of the `sed` issue
+# Usage in a make target:
+# $(LINUX_UTILITY_CONTAINER) sed -i "s/\r//g" ".build/service-ips"
+# Using a container can be "disabled" by setting EXECUTE_IN_LINUX_UTILITY_CONTAINER to "false"
+LINUX_UTILITY_CONTAINER=
+EXECUTE_IN_LINUX_UTILITY_CONTAINER?=true
+ifeq ($(EXECUTE_IN_LINUX_UTILITY_CONTAINER),true)
+	LINUX_UTILITY_CONTAINER=docker run -i --rm -v $$(pwd):/codebase --workdir /codebase busybox 
+endif
 
 include .make/*.mk
 
@@ -96,10 +104,9 @@ help:
 	@printf '%-43s \033[1mmake make-init ENVS="ENV=prod TAG=latest"\033[0m\n'
 	@awk 'BEGIN {FS = ":.*##"; printf "\n\033[1mUsage:\033[0m\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-40s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' Makefile .make/*.mk
 
-  	
 ##@ [Make]
 
-ENVS?=ENV=local TAG=latest
+ENVS?=ENV=local
 .PHONY: make-init
 make-init: ## Initializes the local `.make/.env` file with ENV variables for make. Use via ENVS="KEY_1=value1 KEY_2=value2"
 	@$(if $(ENVS),,$(error ENVS is undefined))

@@ -14,7 +14,7 @@ PHPUNIT_CMD=php vendor/bin/phpunit
 PHPUNIT_ARGS= -c phpunit.xml --log-junit .build/report.xml
 PHPUNIT_FILES=
 PHPSTAN_CMD=php vendor/bin/phpstan analyse
-PHPSTAN_ARGS=--level=9
+PHPSTAN_ARGS=--level=8
 PHPSTAN_FILES=$(APP_FILES) $(TEST_FILES)
 PHPCS_CMD=php vendor/bin/phpcs
 PHPCS_ARGS=--parallel=$(CORES) --standard=psr12

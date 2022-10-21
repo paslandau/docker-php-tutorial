@@ -39,9 +39,11 @@ class TriggerJobCommand extends Command
     public function handle(LoggerInterface $logger): void
     {
         $jobId = $this->option("job-id");
+        \assert(is_string($jobId));
+
         $logger->info("Calling php-fpm to insert job '$jobId'");
-        $result = file_get_contents("http://nginx/?dispatch=".urlencode($jobId));
-        $logger->info("Result:".$result);
+        $result = file_get_contents("http://nginx/?dispatch=" . urlencode($jobId));
+        $logger->info("Result:" . $result);
         $this->info("Inserted job '$jobId' via UI");
     }
 }

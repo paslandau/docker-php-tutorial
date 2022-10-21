@@ -1,5 +1,6 @@
 **/*.env*
 !.env.example
+!.env.testing
 !.make/variables.env
 .idea
 .phpunit.result.cache

@@ -149,8 +149,8 @@ docker-compose-show-build-context: ## Show all files that are in the docker buil
 
 .PHONY: validate-docker-variables
 validate-docker-variables:
-	@$(if $(TAG),,$(error TAG is undefined - Did you run 'make make-init'?))
-	@$(if $(ENV),,$(error ENV is undefined - Did you run 'make make-init'?))
+	@$(if $(TAG),,$(error TAG is undefined))
+	@$(if $(ENV),,$(error ENV is undefined))
 	@$(if $(DOCKER_REGISTRY),,$(error DOCKER_REGISTRY is undefined))
 	@$(if $(DOCKER_NAMESPACE),,$(error DOCKER_NAMESPACE is undefined))
 	@$(if $(APP_CODE_PATH_CONTAINER),,$(error APP_CODE_PATH_CONTAINER is undefined))
@@ -178,7 +178,7 @@ docker-run: validate-docker-variables ## Start a single docker container
 	docker run 	--name $(DOCKER_SERVICE_NAME) \
 				-d \
 				-it \
-				--env-file compose-secrets.env \
+				--env-file docker-run-secrets.env \
 				--mount type=bind,source="$$(pwd)"/secret.gpg,target=$(APP_CODE_PATH_CONTAINER)/secret.gpg,readonly \
 				$(HOST_STRING) \
 				$(DOCKER_SERVICE_OPTIONS) \

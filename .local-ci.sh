@@ -7,8 +7,11 @@ make docker-compose-down ENV=ci || true
 
 start_total=$(date +%s)
 
-# STORE GPG KEY
-cp secret-protected.gpg.example secret.gpg
+# STORE GPG KEY and password
+cp .tutorial/secret-ci-protected.gpg.example secret.gpg
+# The `docker-run-secrets.env` file is used in `.docker/docker-compose/docker-compose.ci.yml`
+# to pass make the GPG_PASSWORD available in `.docker/images/php/base/decrypt-secrets.sh`
+echo "GPG_PASSWORD=12345678" > docker-run-secrets.env
 
 # DEBUG
 docker version
@@ -16,18 +19,16 @@ docker compose version
 cat /etc/*-release || true
 
 # SETUP DOCKER
-make make-init ENVS="ENV=ci TAG=latest EXECUTE_IN_CONTAINER=true GPG_PASSWORD=12345678"
+make make-init ENVS="ENV=ci EXECUTE_IN_CONTAINER=true"
+make docker-compose-init
 start_docker_build=$(date +%s)
 make docker-compose-build
 end_docker_build=$(date +%s)
-mkdir -p .build && chmod 777 .build
       
 # START DOCKER
 start_docker_up=$(date +%s)
 make docker-compose-up
 end_docker_up=$(date +%s)
-make gpg-init
-make secret-decrypt-with-password
     
 # QA
 start_qa=$(date +%s)
@@ -59,6 +60,9 @@ echo "Total:               " `expr $end_total - $start_total`
 # CLEANUP
 # reset the default make variables
 make make-init
+# restore the local GPG key
+cp .tutorial/secret.gpg.example secret.gpg
+
 make docker-compose-down ENV=ci || true
   
 # EVALUATE RESULTS

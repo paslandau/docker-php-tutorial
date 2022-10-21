@@ -13,6 +13,7 @@
         "laravel/sanctum": "^2.14",
         "laravel/tinker": "^2.7",
         "nunomaduro/collision": "^6.1",
+        "psr/log": "^3.0",
         "symfony/console": "^6.0"
     },
     "require-dev": {

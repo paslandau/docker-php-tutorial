@@ -90,6 +90,7 @@ secret-decrypt: ## Decrypt secret files via `git-secret reveal -f`. Use FILES=fi
 
 .PHONY: secret-decrypt-with-password
 secret-decrypt-with-password: ## Decrypt secret files using a password for gpg. Use FILES=file1 to decrypt only file1 instead of all files
+	@echo "GPG_PASSWORD: $(GPG_PASSWORD)"
 	@$(if $(GPG_PASSWORD),,$(error GPG_PASSWORD is undefined))
 	"$(MAKE)" -s git-secret ARGS="reveal -f -p $(GPG_PASSWORD) $(FILES)" 
 

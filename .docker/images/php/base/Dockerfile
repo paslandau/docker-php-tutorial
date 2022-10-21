@@ -167,7 +167,7 @@ RUN find /codebase/.secrets -type f -print | grep -v "/\(shared\|$ENV\)/" | xarg
 RUN cd /codebase && \
     git init
 
-FROM base as prod
+FROM base as ci_prod
 
 # We will use a custom ENTRYPOINT to decrypt the secrets when the container starts.
 # This way, we can store the secrets in their encrypted form directly in the image.
@@ -181,11 +181,16 @@ RUN chmod +x /decrypt-secrets.sh
 CMD ["/bin/sh"]
 ENTRYPOINT ["/decrypt-secrets.sh"]
 
+FROM ci_prod as prod
+
 COPY --from=codebase --chown=$APP_USER_NAME:$APP_GROUP_NAME /codebase $APP_CODE_PATH
 
+# Note:
+# The build info file should come last, because it is the most likely file to change.
+# If we would put it BEFORE copying the codebase, we couldn't leverage layer caching effectively.
 COPY --chown=$APP_USER_NAME:$APP_GROUP_NAME ./.build/build-info $APP_CODE_PATH/build-info
 
-FROM base as ci
+FROM ci_prod as ci
 
 COPY --from=codebase --chown=$APP_USER_NAME:$APP_GROUP_NAME /codebase $APP_CODE_PATH
 
@@ -198,8 +203,6 @@ RUN echo "root ALL=(ALL) NOPASSWD: ALL " | tee -a "/etc/sudoers.d/users" && \
     echo "${APP_USER_NAME} ALL=(ALL) NOPASSWD: ALL " | tee -a "/etc/sudoers.d/users"
 
 RUN apk add --no-cache --update \
-        mysql-client \
-        redis \
         php-xdebug~=${TARGET_PHP_VERSION} \
     # ensure that xdebug is not enabled by default
     && rm -f /etc/php8/conf.d/00_xdebug.ini

@@ -22,10 +22,14 @@ class HomeController extends Controller
     {
     }
 
-    public function __invoke(Request $request, QueueManager $queueManager, DatabaseManager $databaseManager, LoggerInterface $logger): View
-    {
-        $logger->info("Handling HTTP request: ".$request->getUri());
-        
+    public function __invoke(
+        Request $request,
+        QueueManager $queueManager,
+        DatabaseManager $databaseManager,
+        LoggerInterface $logger
+    ): View {
+        $logger->info("Handling HTTP request: " . $request->getUri());
+
         /**
          * @var string|null $jobId
          */

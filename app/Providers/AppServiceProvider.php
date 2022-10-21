@@ -26,20 +26,28 @@ class AppServiceProvider extends ServiceProvider
             TriggerJobCommand::class,
         ]);
 
-        $this->mergeConfigFrom(__DIR__."/../../config/custom.php", "custom");
+        $this->mergeConfigFrom(__DIR__ . "/../../config/custom.php", "custom");
 
         /**
          * Note:
          * We are using our own Logger class to apply a default context for each log line
          * because the Laravel-native `Log::shareContext()` did not work when running in
          * a PHP worker controlled via supervisor.
-         * 
+         *
          * @see https://laravel.com/docs/9.x/logging#contextual-information
          */
         $this->app->singleton(LoggerInterface::class, function () {
-            $log            = $this->app->get("log");
-            $config         = $this->app->get(Repository::class);
-            $serviceName    = $config->get("custom.service");
+            /**
+             * @var LoggerInterface $log
+             */
+            $log = $this->app->get("log");
+
+            /**
+             * @var Repository $config
+             */
+            $config = $this->app->get(Repository::class);
+
+            $serviceName    = (string) $config->get("custom.service");
             $defaultContext = [
                 'pid'     => getmypid(),
                 'service' => $serviceName,

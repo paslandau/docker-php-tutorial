@@ -2,19 +2,26 @@
 
 set -e
 
-usage="Usage: deploy.sh docker_service_name"
+usage="Usage: deploy.sh docker_service_name docker_image_tag (Example: deploy.sh application latest)"
 [ -z "$1" ] &&  echo "No docker_service_name given! $usage" && exit 1
+[ -z "$2" ] &&  echo "No docker_image_tag given! $usage" && exit 1
 
 docker_service_name=$1
-docker_service_name_logger=logger
+docker_image_tag=$2
+docker_service_name_logger="logger"
+
+echo "Cleaning up ALL images older than 7 days"
+docker image prune -f -a --filter "until=168h"
+echo "Cleaning up untagged images older than 1 day"
+docker image prune -f --filter "until=24h"
 
 echo "Initializing the codebase"
-make make-init ENVS="ENV=prod TAG=latest EXECUTE_GCLOUD_IN_CONTAINER=false"
+make make-init ENVS="ENV=prod TAG=${docker_image_tag} EXECUTE_GCLOUD_IN_CONTAINER=false"
 echo "Retrieving secrets"
 make gcp-secret-get SECRET_NAME=GPG_KEY > secret.gpg
 GPG_PASSWORD=$(make gcp-secret-get SECRET_NAME=GPG_PASSWORD)
-echo "Creating compose-secrets.env file"
-echo "GPG_PASSWORD=$GPG_PASSWORD" > compose-secrets.env
+echo "Creating docker-run-secrets.env file"
+echo "GPG_PASSWORD=$GPG_PASSWORD" > docker-run-secrets.env
 
 echo "Pulling image for '${docker_service_name}' on the VM from the registry"
 make docker-pull DOCKER_SERVICE_NAME="${docker_service_name}"

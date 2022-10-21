@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - part-7-ci-pipeline-docker-php-gitlab-github
+      - TEST__**
   pull_request: {}
   # enable to trigger the action manually
   # @see https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
@@ -25,10 +26,12 @@ jobs:
         run: |
           echo "START_TOTAL=$(date +%s)" > $GITHUB_ENV
           
-      - name: STORE GPG KEY
+      - name: STORE GPG KEY AND PASSWORD
         run: |
           # Note: make sure to wrap the secret in double quotes (")
           echo "${{ secrets.GPG_KEY }}" > ./secret.gpg
+          echo "GPG_PASSWORD=${{ secrets.GPG_PASSWORD }}" > ./docker-run-secrets.env
+          cat ./docker-run-secrets.env
     
       - name: SETUP TOOLS
         run : |
@@ -48,15 +51,13 @@ jobs:
 
       - name: SETUP DOCKER
         run: |
-          make make-init ENVS="ENV=ci TAG=latest EXECUTE_IN_CONTAINER=true GPG_PASSWORD=${{ secrets.GPG_PASSWORD }}"
+          make make-init ENVS="ENV=ci EXECUTE_IN_CONTAINER=true"
+          make docker-compose-init
           make docker-compose-build
-          mkdir .build && chmod 777 .build
           
       - name: START DOCKER
         run: |
           make docker-compose-up
-          make gpg-init
-          make secret-decrypt-with-password
           
       - name: QA
         run: |

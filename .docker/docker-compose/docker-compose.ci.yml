@@ -2,6 +2,13 @@ version: '3.7'
 
 services:
   application:
+    env_file:
+      # The env file is used to pass the GPG_PASSWORD as env variable to the container.
+      # This is required to decrypt the secrets on container start. The location of the env file is
+      # "../../docker-run-secrets.env" which will point to the file "docker-run-secrets.env" in the root of the repository 
+      # See also the docs @see https://docs.docker.com/compose/compose-file/compose-file-v3/#env_file
+      # "If you have specified a Compose file with docker-compose -f FILE, paths in env_file are relative to the directory that file is in."
+      - ../../docker-run-secrets.env
     volumes:
       # make the secret gpg available to the container so that we can
       # decrypt the secrets once the container starts

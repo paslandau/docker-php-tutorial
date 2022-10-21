@@ -1,22 +1,36 @@
 ##@ [Deployment]
 
+# Note:
+# We separate the deployment process in multiple steps so that we can run
+# them with the `-k` (--keep-going) flag to ensure that the cleanup step 
+# is guaranteed to be executed
 .PHONY: deploy
-deploy: ## Build all images and deploy them to GCP
+deploy: ## Build all images and deploy them to GCP. Usage: make deploy DEPLOYMENT_TAG=v1.1.0 IGNORE_SECRET_CHANGES=false IGNORE_UNCOMMITTED_CHANGES=false
+	@$(if $(DEPLOYMENT_TAG),,$(error "DEPLOYMENT_TAG is undefined"))
+	@"$(MAKE)" deploy-prepare
+	@"$(MAKE)" -k \
+		deploy-execute \
+		deploy-cleanup
+
+
+.PHONY: deploy-prepare
+deploy-prepare: ## Prepare the deployment process
 	@printf "$(GREEN)Cleaning up old 'deployment-settings.env' file$(NO_COLOR)\n"
 	@"$(MAKE)" make-remove-deployment-settings
-	@printf "$(GREEN)Starting docker setup locally$(NO_COLOR)\n"
-	@"$(MAKE)" docker-compose-up
 	@printf "$(GREEN)Verifying that there are no changes in the secrets$(NO_COLOR)\n"
-	@"$(MAKE)" gpg-init
 	@"$(MAKE)" deployment-guard-secret-changes
 	@printf "$(GREEN)Verifying that there are no uncommitted changes in the codebase$(NO_COLOR)\n"
 	@"$(MAKE)" deployment-guard-uncommitted-changes
+
+.PHONY: deploy-execute
+deploy-execute: ## Excecute the deployment process
+	cat asdafa
 	@printf "$(GREEN)Initializing gcloud deployment service account$(NO_COLOR)\n"
 	@"$(MAKE)" gcp-activate-deployment-account
 	@printf "$(GREEN)Authentication docker with the deployment service account$(NO_COLOR)\n"
 	@"$(MAKE)" gcp-authenticate-docker SERVICE_ACCOUNT_KEY_FILE=$(GCP_DEPLOYMENT_SERVICE_ACCOUNT_KEY_FILE)
 	@printf "$(GREEN)Switching to 'prod' environment ('deployment-settings.env' file)$(NO_COLOR)\n"
-	@"$(MAKE)" make-init-deployment-settings ENVS="ENV=prod TAG=latest"
+	@"$(MAKE)" make-init-deployment-settings ENVS="ENV=prod TAG=$(DEPLOYMENT_TAG)"
 	@printf "$(GREEN)Creating build information file$(NO_COLOR)\n"
 	@"$(MAKE)" deployment-create-build-info-file
 	@printf "$(GREEN)Building docker images$(NO_COLOR)\n"
@@ -29,6 +43,9 @@ deploy: ## Build all images and deploy them to GCP
 	@"$(MAKE)" deployment-create-tar
 	@printf "$(GREEN)Copying the deployment archive to the VMs and run the deployment$(NO_COLOR)\n"
 	@"$(MAKE)" deployment-run-on-vms
+
+.PHONY: deploy-cleanup
+deploy-cleanup: ## Clean up temporary artifacts of the deployment process
 	@printf "$(GREEN)Clearing deployment archive$(NO_COLOR)\n"
 	@"$(MAKE)" deployment-clear-tar
 	@printf "$(GREEN)Removing 'deployment-settings.env' file$(NO_COLOR)\n"
@@ -40,12 +57,16 @@ CODEBASE_DIRECTORY=/tmp/codebase
 IGNORE_SECRET_CHANGES?=
 
 .PHONY: deployment-guard-secret-changes
-deployment-guard-secret-changes: ## Check if there are any changes between the decrypted and encrypted secret files
-	@if ( ! "$(MAKE)" secret-diff || [ "$$("$(MAKE)" secret-diff | grep ^@@)" != "" ] ) && [ "$(IGNORE_SECRET_CHANGES)" == "" ] ; then \
-        printf "Found changes in the secret files => $(RED)ABORTING$(NO_COLOR)\n\n"; \
-        printf "Use with IGNORE_SECRET_CHANGES=true to ignore this warning\n\n"; \
-        "$(MAKE)" secret-diff; \
-        exit 1; \
+deployment-guard-secret-changes: ## Check if there are any changes between the decrypted and encrypted secret files. The check can be ignore by passing `IGNORE_SECRET_CHANGES=true`
+	@if  [ "$(IGNORE_SECRET_CHANGES)" != "true" ] ; then \
+  		"$(MAKE)" docker-compose-up; \
+  		"$(MAKE)" gpg-init; \
+		if ( ! "$(MAKE)" secret-diff || [ "$$("$(MAKE)" secret-diff | grep ^@@)" != "" ] ) ; then \
+			printf "Found changes in the secret files => $(RED)ABORTING$(NO_COLOR)\n\n"; \
+			printf "Use with IGNORE_SECRET_CHANGES=true to ignore this warning\n\n"; \
+			"$(MAKE)" secret-diff; \
+			exit 1; \
+		fi \
     fi
 	@echo "No changes in the secret files!"
 
@@ -53,7 +74,7 @@ IGNORE_UNCOMMITTED_CHANGES?=
 
 .PHONY: deployment-guard-uncommitted-changes
 deployment-guard-uncommitted-changes: ## Check if there are any git changes and abort if so. The check can be ignore by passing `IGNORE_UNCOMMITTED_CHANGES=true`
-	@if [ "$$(git status -s)" != "" ] && [ "$(IGNORE_UNCOMMITTED_CHANGES)" == "" ] ; then \
+	@if [ "$(IGNORE_UNCOMMITTED_CHANGES)" != "true" ] && [ "$$(git status -s)" != "" ] ; then \
         printf "Found uncommitted changes in git => $(RED)ABORTING$(NO_COLOR)\n\n"; \
         printf "Use with IGNORE_UNCOMMITTED_CHANGES=true to ignore this warning\n\n"; \
         git status -s; \
@@ -67,21 +88,26 @@ deployment-guard-uncommitted-changes: ## Check if there are any git changes and 
 #  ==> $$(command)
 # @see https://stackoverflow.com/a/26564874/413531
 .PHONY: deployment-create-build-info-file
-deployment-create-build-info-file: ## Create a file containing version information about the codebase
+deployment-create-build-info-file: ## Create a file containing version information about the codebase. Usage: make deployment-create-build-info-file DEPLOYMENT_TAG=v1.1.0
+	@$(if $(DEPLOYMENT_TAG),,$(error "DEPLOYMENT_TAG is undefined"))
 	@echo "BUILD INFO" > ".build/build-info"
 	@echo "==========" >> ".build/build-info"
 	@echo "User  :" $$(whoami) >> ".build/build-info"
 	@echo "Date  :" $$(date --rfc-3339=seconds) >> ".build/build-info"
 	@echo "Branch:" $$(git branch --show-current) >> ".build/build-info"
+	@echo "Tag   :" $(DEPLOYMENT_TAG) >> ".build/build-info"
 	@echo "" >> ".build/build-info"
 	@echo "Commit" >> ".build/build-info"
 	@echo "------" >> ".build/build-info"
 	@git log -1 --no-color >> ".build/build-info"
 
+# The
+#  sed -i "s/\r//g"
+# part is required, because on windows the resulting file might contain "\r\n" line endings
 .PHONY: deployment-create-service-ip-file
 deployment-create-service-ip-file: ## Create a file containing the IPs of all services
 	@"$(MAKE)" -s gcp-get-ips > ".build/service-ips"
-	@sed -i "s/\r//g" ".build/service-ips"
+	@$(LINUX_UTILITY_CONTAINER) sed -i "s/\r//g" ".build/service-ips"
 
 # create tar archive
 #  tar -czvf archive.tar.gz ./source
@@ -122,10 +148,11 @@ deployment-run-on-vms: ## Run the deployment script on all VMs
  				 						deployment-run-on-vm-nginx
 
 .PHONY: deployment-run-on-vm
-deployment-run-on-vm: ## Run the deployment script on the VM specified by VM_NAME for the service specified by DOCKER_SERVICE_NAME
+deployment-run-on-vm: ## Run the deployment script on a VM. Usage: make VM_NAME=application-vm DOCKER_SERVICE_NAME=application DEPLOYMENT_TAG=v1.1.0
 	@$(if $(DOCKER_SERVICE_NAME),,$(error "DOCKER_SERVICE_NAME is undefined"))
+	@$(if $(DEPLOYMENT_TAG),,$(error "DEPLOYMENT_TAG is undefined"))
 	"$(MAKE)" -s gcp-scp-command SOURCE=".build/deployment.tar.gz" DESTINATION="deployment.tar.gz"
-	"$(MAKE)" -s gcp-ssh-command COMMAND="sudo rm -rf $(CODEBASE_DIRECTORY) && sudo mkdir -p $(CODEBASE_DIRECTORY) && sudo tar -xzvf deployment.tar.gz -C $(CODEBASE_DIRECTORY) && cd $(CODEBASE_DIRECTORY) && sudo bash deploy.sh $(DOCKER_SERVICE_NAME)"
+	"$(MAKE)" -s gcp-ssh-command COMMAND="sudo rm -rf $(CODEBASE_DIRECTORY) && sudo mkdir -p $(CODEBASE_DIRECTORY) && sudo tar -xzvf deployment.tar.gz -C $(CODEBASE_DIRECTORY) && cd $(CODEBASE_DIRECTORY) && sudo bash deploy.sh $(DOCKER_SERVICE_NAME) $(DEPLOYMENT_TAG)"
 
 .PHONY: deployment-run-on-vm-application
 deployment-run-on-vm-application:

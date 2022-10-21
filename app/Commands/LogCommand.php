@@ -7,6 +7,7 @@ use Illuminate\Database\Console\Migrations\MigrateCommand;
 use Illuminate\Database\Console\WipeCommand;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Webmozart\Assert\Assert;
 
 class LogCommand extends Command
 {
@@ -39,6 +40,8 @@ class LogCommand extends Command
     public function handle(LoggerInterface $logger): void
     {
         $message = $this->option("message");
+        \assert(is_string($message));
+
         $logger->info($message);
     }
 }
