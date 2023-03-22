@@ -34,7 +34,7 @@ DOCKER_COMPOSE_DIR:=$(DOCKER_DIR)/docker-compose
 DOCKER_COMPOSE_FILE:=$(DOCKER_COMPOSE_DIR)/docker-compose.yml
 DOCKER_COMPOSE_FILE_LOCAL:=$(DOCKER_COMPOSE_DIR)/docker-compose.local.yml
 DOCKER_COMPOSE_FILE_PHP_BASE:=$(DOCKER_COMPOSE_DIR)/docker-compose-php-base.yml
-DOCKER_COMPOSE_PROJECT_NAME:=dofroscra_$(ENV)
+DOCKER_COMPOSE_PROJECT_NAME:=$(DOCKER_NAMESPACE)_$(ENV)
 
 # we need a couple of environment variables for docker-compose so we define a make-variable that we can
 # then reference later in the Makefile without having to repeat all the environment variables
