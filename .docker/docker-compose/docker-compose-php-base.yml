@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:
+  php-base:
+    image: ${DOCKER_REGISTRY?}/${DOCKER_NAMESPACE?}/php-base-${ENV?}:${TAG?}
+    build:
+      # pass the full codebase to docker for building the image
+      context: ../../
+      dockerfile: ./.docker/images/php/base/Dockerfile
+      args:
+        - ALPINE_VERSION=${ALPINE_VERSION?}
+        - APP_CODE_PATH=${APP_CODE_PATH_CONTAINER?}
+        - APP_GROUP_ID=${APP_GROUP_ID?}
+        - APP_GROUP_NAME=${APP_GROUP_NAME?}
+        - APP_USER_ID=${APP_USER_ID?}
+        - APP_USER_NAME=${APP_USER_NAME?}
+        - COMPOSER_VERSION=${COMPOSER_VERSION?}
+        - ENV=${ENV?}
+        - TARGET_PHP_VERSION=${PHP_VERSION?}
+      target: ${ENV?}

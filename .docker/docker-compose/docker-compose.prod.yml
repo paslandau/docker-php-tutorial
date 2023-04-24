@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  php-fpm:
+    env_file:
+      # The env file is used to pass the GPG_PASSWORD as env variable to the containers.
+      # This is required to decrypt the secrets on container start. The location of the env file is
+      # "../../compose-secrets.env" which will point to the file "compose-secrets.env" in the root of the repository 
+      # See also the docs @see https://docs.docker.com/compose/compose-file/compose-file-v3/#env_file
+      # "If you have specified a Compose file with docker-compose -f FILE, paths in env_file are relative to the directory that file is in."
+      - ../../compose-secrets.env
+    volumes:
+      - ${APP_CODE_PATH_HOST?}/secret.gpg:${APP_CODE_PATH_CONTAINER?}/secret.gpg:ro
+      
+  php-worker:
+    env_file:
+      - ../../compose-secrets.env
+    volumes:
+      - ${APP_CODE_PATH_HOST?}/secret.gpg:${APP_CODE_PATH_CONTAINER?}/secret.gpg:ro
+  
+  application:
+    env_file:
+      - ../../compose-secrets.env
+    volumes:
+      - ${APP_CODE_PATH_HOST?}/secret.gpg:${APP_CODE_PATH_CONTAINER?}/secret.gpg:ro

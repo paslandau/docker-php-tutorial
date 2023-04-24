@@ -1,0 +1,23 @@
+# This file is for unifying the coding style for different editors and IDEs
+# editorconfig.org
+
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
+#trim_trailing_whitespace = true
+insert_final_newline = true
+
+[**.php]
+indent_style = space
+indent_size = 4
+
+[{Makefile,**.mk}]
+# Use tabs for indentation (Makefiles require tabs)
+indent_style = tab
+
+[**.md]
+max_line_length = 100
+ij_visual_guides = 100
+ij_wrap_on_typing = true

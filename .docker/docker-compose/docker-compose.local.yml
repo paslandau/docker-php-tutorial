@@ -1,0 +1,61 @@
+version: '3.7'
+
+services:
+  php-fpm:
+    environment:
+      - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
+    volumes:
+      - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+    # cap_add and security_opt are required to enable strace
+    # @see https://stackoverflow.com/a/46676868
+    cap_add:
+      - "SYS_PTRACE"
+    security_opt:
+      - "seccomp=unconfined"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+      
+  php-worker:
+    environment:
+      - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
+    volumes:
+      - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+    # cap_add and security_opt are required to enable strace
+    # @see https://stackoverflow.com/a/46676868
+    cap_add:
+      - "SYS_PTRACE"
+    security_opt:
+      - "seccomp=unconfined"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  
+  nginx:
+    volumes:
+      - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+
+  application:
+    build:
+      args:
+        - APP_SSH_PASSWORD=${APP_SSH_PASSWORD?}    
+    environment:
+      - PHP_IDE_CONFIG=${PHP_IDE_CONFIG?}
+    # cap_add and security_opt are required to enable strace
+    # @see https://stackoverflow.com/a/46676868
+    cap_add:
+      - "SYS_PTRACE"
+    security_opt:
+      - "seccomp=unconfined"
+    volumes:
+      - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+    ports:
+      - "${APPLICATION_SSH_HOST_PORT:-2222}:22"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+   
+  mysql:
+    ports:
+      - "${MYSQL_HOST_PORT:-3306}:3306"
+  
+  redis:
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"

@@ -65,7 +65,8 @@ available containing all videos of the tutorial series.
 - [Use git-secret to encrypt secrets in the repository](#use-git-secret-to-encrypt-secrets-in-the-repository)
 - [Create a CI pipeline for dockerized PHP Apps](#create-a-ci-pipeline-for-dockerized-php-apps)
 - [A primer on GCP Compute Instance VMs for dockerized Apps](#a-primer-on-gcp-compute-instance-vms-for-dockerized-apps)
-- [Deploy dockerized PHP Apps to production on GCP via docker compose](#deploy-dockerized-php-apps-to-production-on-gcp-via-docker-compose)
+- [Deploy dockerized PHP Apps to production on GCP via `docker compose`](#deploy-dockerized-php-apps-to-production-on-gcp-via-docker-compose)
+- [Create a production infrastructure for dockerized PHP Apps on GCP](#create-a-production-infrastructure-for-dockerized-php-apps-on-gcp)
 
 ### Planned (already used by us but not put into writing):
 
@@ -190,7 +191,17 @@ applications.
 Introduce a `prod` environment to build docker images that are then deployed "to production" on a
 GCP VM to be executed via `docker compose` as a proof-of-concept.
 
-### Run dockerized PHP Apps on multiple GCP VMs in production
+### Create a production infrastructure for dockerized PHP Apps on GCP
+
+- Status: published ✓
+- Link: https://www.pascallandau.com/blog/create-production-infrastructure-php-app-gcp/
+- Branch:
+  [Part 10](https://github.com/paslandau/docker-php-tutorial/tree/part-10-create-production-infrastructure-php-app-gcp)
+
+Create a production infrastructure for a dockerized PHP application on GCP using multiple VMs 
+and managed services for `redis` and `mysql`.
+
+### Deploy dockerized PHP Apps to production
 
 - Status: draft
 - Link:

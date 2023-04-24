@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  application:
+    volumes:
+      # make the secret gpg available to the container so that we can
+      # decrypt the secrets once the container starts
+      - ${APP_CODE_PATH_HOST?}/secret.gpg:${APP_CODE_PATH_CONTAINER?}/secret.gpg:ro
+      # mount a folder for build artifacts 
+      - ${APP_CODE_PATH_HOST?}/.build:${APP_CODE_PATH_CONTAINER?}/.build

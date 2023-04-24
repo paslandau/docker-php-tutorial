@@ -1,3 +1,6 @@
+# ---
+# Rules from .gitignore
+# ---
 **/*.env*
 !.env.example
 !.make/variables.env
@@ -9,6 +12,8 @@ secret.gpg
 .gitsecret/keys/pubring.kbx~
 .secrets/*/*
 !**/*.secret
+.build/*
+!.gitkeep
 gcp-service-account-key.json
 gcp-master-service-account-key.json
 
@@ -37,3 +42,19 @@ storage/framework/logs/*
 
 # => keep ALL .gitignore files
 !**.gitignore
+
+# ---
+# Rules specifically for .dockerignore
+# ---
+
+# => don't transfer the git directory
+.git
+
+# => keep the build-info file
+!.build/build-info
+
+# [WORKAROUND]
+# temporary fix for https://github.com/docker/compose/issues/9508
+# Otherwise, `docker compose build` would transfer the `.gitignore` files 
+# in the vendor/ directory to the build context
+vendor/**

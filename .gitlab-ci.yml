@@ -1,0 +1,98 @@
+stages:
+  - build_test
+
+QA and Tests:
+  stage: build_test
+  
+  rules:
+    # automatically run for pull request and for pushes to branch "part-7-ci-pipeline-docker-php-gitlab-github"
+    - if: '($CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "part-7-ci-pipeline-docker-php-gitlab-github")'
+  
+  # see https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-in-docker
+  # for using Gitlab pipelines to build and run docker images
+  image: docker:20.10.12
+  
+  services:
+    - name: docker:dind
+
+  script:
+    - start_total=$(date +%s)
+    
+    ## STORE GPG KEY
+    - cp $GPG_KEY_FILE ./secret.gpg
+    
+    ## SETUP TOOLS
+    - start_install_tools=$(date +%s)
+    # "curl" is required to download docker compose
+    - apk add --no-cache make bash curl
+    # install docker compose
+    # @see https://docs.docker.com/compose/cli-command/#install-on-linux
+    - mkdir -p ~/.docker/cli-plugins/
+    - curl -sSL https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+    - chmod +x ~/.docker/cli-plugins/docker-compose
+    - end_install_tools=$(date +%s)
+    
+    ## DEBUG
+    - docker version
+    - docker compose version
+    # show linux distro info
+    - cat /etc/*-release
+    
+    ## SETUP DOCKER
+    # Pass default values to the make-init command - otherwise we would have to pass those as arguments to every make call
+    - make make-init ENVS="ENV=ci TAG=latest EXECUTE_IN_CONTAINER=true GPG_PASSWORD=$GPG_PASSWORD"
+    - start_docker_build=$(date +%s)
+    - make docker-build
+    - end_docker_build=$(date +%s)
+    - mkdir .build && chmod 777 .build
+      
+    ## START DOCKER
+    - start_docker_up=$(date +%s)
+    - make docker-up
+    - end_docker_up=$(date +%s)
+    - make gpg-init
+    - make secret-decrypt-with-password
+    
+    ## QA
+    # Run the tests and qa tools but only store the error instead of failing immediately
+    # @see https://stackoverflow.com/a/59200738/413531
+    - start_qa=$(date +%s)
+    - make qa || FAILED=true
+    - end_qa=$(date +%s)
+    
+    ## WAIT FOR CONTAINERS
+    # We need to wait until mysql is available.
+    - start_wait_for_containers=$(date +%s)
+    - bash .docker/scripts/wait-for-service.sh mysql 30 1
+    - end_wait_for_containers=$(date +%s)
+    
+    ## TEST
+    - start_test=$(date +%s)
+    - make test ENV=ci || FAILED=true
+    - end_test=$(date +%s)
+      
+    - end_total=$(date +%s)
+    
+    # RUNTIMES
+    - echo "Tools:" `expr $end_install_tools - $start_install_tools`
+    - echo "Build docker:" `expr $end_docker_build - $start_docker_build`
+    - echo "Start docker:" `expr $end_docker_up - $start_docker_up  `
+    - echo "QA:" `expr $end_qa - $start_qa`
+    - echo "Wait for containers:" `expr $end_wait_for_containers - $start_wait_for_containers`
+    - echo "Tests:" `expr $end_test - $start_test`
+    - echo "Total:" `expr $end_total - $start_total`
+      
+    # EVALUATE RESULTS
+    # Use if-else constructs in Gitlab pipelines
+    # @see https://stackoverflow.com/a/55464100/413531
+    - if [ "$FAILED" == "true" ]; then exit 1; fi
+      
+  # Save the build artifact, e.g. the JUNIT report.xml file, so we can download it later
+  # @see https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html
+  artifacts:
+    when: always
+    paths:
+      # the quotes are required
+      # @see https://stackoverflow.com/questions/38009869/how-to-specify-wildcard-artifacts-subdirectories-in-gitlab-ci-yml#comment101411265_38055730
+      - ".build/*"
+    expire_in: 1 week
